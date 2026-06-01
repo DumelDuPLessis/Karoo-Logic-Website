@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karoo Logic — Scalable Software, Written Right</title>
+  <link rel="icon" href="Logos/favicon-icon.jpg" type="image/jpeg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lime:    #DCFD39;
+      --lime-dk: #b5d020;
+      --green:   #315701;
+      --orange:  #FE5128;
+      --orange-dk:#d63e15;
+      --crimson: #73010C;
+      --blue:    #1B6FD4;
+      --blue-lt: #3a8cec;
+      --blue-dk: #1255a8;
+      --ink:     #070709;
+      --ink-1:   #0e0e12;
+      --ink-2:   #161619;
+      --ink-3:   #1f1f23;
+      --ink-4:   #28282d;
+      --txt-1:   #F2F2F4;
+      --txt-2:   #A4A4B0;
+      --txt-3:   #5a5a66;
+      --border:  rgba(255,255,255,0.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--ink);
+      color: var(--txt-1);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.03em; line-height: 1.08; }
+    img { display: block; }
+    a { text-decoration: none; }
+
+    /* ── CURSOR GLOW (no dot — keep native cursor) ── */
+    #cursor-glow {
+      position: fixed; width: 100px; height: 100px;
+      border-radius: 50%; pointer-events: none; z-index: 9990;
+      transform: translate(-50%,-50%);
+      background: radial-gradient(circle, rgba(27,111,212,.22) 0%, rgba(27,111,212,.08) 50%, transparent 72%);
+      will-change: left, top;
+      transition: background .25s;
+    }
+    body:has(a:hover) #cursor-glow,
+    body:has(button:hover) #cursor-glow {
+      background: radial-gradient(circle, rgba(220,253,57,.2) 0%, rgba(27,111,212,.06) 50%, transparent 72%);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; inset: 0 0 auto; z-index: 500;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 52px; height: 68px;
+      background: rgba(7,7,9,.78);
+      backdrop-filter: blur(20px) saturate(1.2);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { height: 28px; width: auto; }
+    .nav-links { display: flex; align-items: center; gap: 36px; }
+    .nav-links a {
+      color: var(--txt-2); font-size: 14px; font-weight: 500;
+      letter-spacing: .01em; position: relative; transition: color .25s;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -3px; left: 0; right: 100%;
+      height: 1px; background: var(--lime);
+      transition: right .3s cubic-bezier(.16,1,.3,1);
+    }
+    .nav-links a:not(.nav-cta):hover { color: var(--txt-1); }
+    .nav-links a:not(.nav-cta):hover::after { right: 0; }
+    .nav-cta {
+      background: var(--orange) !important; color: #fff !important;
+      padding: 10px 24px !important; border-radius: 8px !important;
+      font-weight: 600 !important;
+      box-shadow: 0 2px 12px rgba(254,81,40,.32);
+      transition: background .2s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s !important;
+    }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { background: var(--orange-dk) !important; transform: translateY(-1px) scale(1.02) !important; box-shadow: 0 4px 20px rgba(254,81,40,.45) !important; }
+
+    /* ── HERO ── */
+    .hero { position: relative; min-height: 100svh; display: flex; align-items: center; overflow: hidden; }
+    #hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+    .hero-photo {
+      position: absolute; inset: 0; z-index: 1; opacity: .16;
+      background: url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1920&q=80') center/cover;
+      mix-blend-mode: luminosity;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0; z-index: 2;
+      background:
+        linear-gradient(115deg, rgba(7,7,9,.97) 40%, rgba(7,7,9,.75) 70%, rgba(7,7,9,.55) 100%),
+        radial-gradient(ellipse 55% 60% at 85% 25%, rgba(27,111,212,.14) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 50% at 10% 80%, rgba(49,87,1,.12) 0%, transparent 60%);
+    }
+    .hero-content { position: relative; z-index: 10; max-width: 1200px; margin: 0 auto; width: 100%; padding: 148px 52px 100px; }
+
+    .hero-animate { opacity: 0; transform: translateY(28px); animation: heroIn .9s cubic-bezier(.16,1,.3,1) forwards; }
+    .hero-animate:nth-child(1) { animation-delay: .1s; }
+    .hero-animate:nth-child(2) { animation-delay: .25s; }
+    .hero-animate:nth-child(3) { animation-delay: .4s; }
+    .hero-animate:nth-child(4) { animation-delay: .55s; }
+    @keyframes heroIn { to { opacity: 1; transform: translateY(0); } }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(220,253,57,.07); border: 1px solid rgba(220,253,57,.18);
+      border-radius: 100px; padding: 6px 16px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--lime); margin-bottom: 36px;
+    }
+    .eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--lime); box-shadow: 0 0 10px var(--lime);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 10px var(--lime)} 50%{opacity:.3;box-shadow:none} }
+
+    .hero h1 { font-size: clamp(52px, 8vw, 104px); font-weight: 700; max-width: 14ch; margin-bottom: 28px; }
+    .hl-lime { color: var(--lime); }
+    .hl-blue { background: linear-gradient(90deg, var(--blue-lt), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero-sub { font-size: 18px; color: var(--txt-2); max-width: 50ch; line-height: 1.75; margin-bottom: 52px; }
+    .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    .scroll-hint {
+      position: absolute; bottom: 36px; left: 52px; z-index: 10;
+      display: flex; align-items: center; gap: 12px;
+      opacity: 0; animation: heroIn .9s .8s forwards;
+    }
+    .scroll-hint span { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--txt-3); font-weight: 600; }
+    .scroll-line { width: 48px; height: 1px; background: linear-gradient(90deg, var(--lime), transparent); animation: scrollPulse 2s ease-in-out infinite; }
+    @keyframes scrollPulse { 0%,100%{width:48px;opacity:.6} 50%{width:72px;opacity:1} }
+
+    /* ── BUTTONS ── */
+    .btn-orange {
+      background: var(--orange); color: #fff;
+      padding: 15px 34px; border-radius: 10px; font-weight: 700; font-size: 15px;
+      display: inline-flex; align-items: center; gap: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.25), 0 6px 20px rgba(254,81,40,.3);
+      transition: background .2s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+    }
+    .btn-orange:hover { background: var(--orange-dk); transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,.3), 0 10px 32px rgba(254,81,40,.42); }
+    .btn-orange:active { transform: translateY(0); }
+
+    /* ── LIQUID GLASS BUTTON (improved) ── */
+    .btn-ghost {
+      position: relative; isolation: isolate;
+      color: var(--txt-1); padding: 15px 34px; border-radius: 12px;
+      font-weight: 500; font-size: 15px;
+      display: inline-flex; align-items: center; gap: 8px;
+      /* Glass sheen gradient — bright top, fading down */
+      background: linear-gradient(
+        160deg,
+        rgba(255,255,255,.25) 0%,
+        rgba(255,255,255,.10) 30%,
+        rgba(255,255,255,.04) 60%,
+        rgba(255,255,255,.08) 100%
+      );
+      border: 1px solid rgba(255,255,255,.22);
+      border-top-color: rgba(255,255,255,.52);
+      border-left-color: rgba(255,255,255,.3);
+      box-shadow:
+        inset 0 1.5px 0 rgba(255,255,255,.55),   /* top inner shine */
+        inset 1px 0 0 rgba(255,255,255,.15),
+        inset -1px -1px 0 rgba(255,255,255,.06),
+        0 8px 28px rgba(0,0,0,.25),
+        0 2px 6px rgba(0,0,0,.14),
+        0 0 0 1px rgba(255,255,255,.05),
+        0 0 16px rgba(255,255,255,.04);
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s, border-color .2s, background .2s;
+    }
+    /* Frosted blur layer */
+    .btn-ghost::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      backdrop-filter: blur(22px) saturate(1.6);
+      z-index: -1;
+    }
+    .btn-ghost:hover {
+      background: linear-gradient(160deg, rgba(255,255,255,.32) 0%, rgba(255,255,255,.14) 30%, rgba(255,255,255,.06) 60%, rgba(255,255,255,.1) 100%);
+      border-top-color: rgba(255,255,255,.7);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,.7),
+        inset 1px 0 0 rgba(255,255,255,.2),
+        0 12px 36px rgba(0,0,0,.3),
+        0 4px 10px rgba(0,0,0,.18),
+        0 0 24px rgba(255,255,255,.07);
+    }
+    .btn-ghost:active { transform: translateY(0) scale(.99); }
+
+    .btn-lime {
+      background: var(--lime); color: var(--ink); padding: 15px 34px; border-radius: 10px;
+      font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; gap: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.2), 0 6px 20px rgba(220,253,57,.2);
+      transition: background .2s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+    }
+    .btn-lime:hover { background: var(--lime-dk); transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,.25), 0 10px 28px rgba(220,253,57,.35); }
+
+    /* ── LIQUID GLASS CARD ── */
+    .glass-card {
+      position: relative; isolation: isolate;
+      border: 1px solid rgba(255,255,255,.18);
+      border-top-color: rgba(255,255,255,.4);
+      border-radius: 18px;
+      background: linear-gradient(155deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.05) 40%, rgba(255,255,255,.02) 100%);
+      box-shadow:
+        inset 0 1.5px 0 rgba(255,255,255,.45),
+        inset 1px 0 0 rgba(255,255,255,.12),
+        0 8px 32px rgba(0,0,0,.3),
+        0 2px 6px rgba(0,0,0,.15),
+        0 0 0 1px rgba(255,255,255,.04);
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s, border-color .2s;
+    }
+    .glass-card::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      backdrop-filter: blur(18px) saturate(1.5);
+      z-index: -1;
+    }
+    .glass-card:hover {
+      transform: translateY(-4px);
+      border-top-color: rgba(255,255,255,.6);
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,.6),
+        inset 1px 0 0 rgba(255,255,255,.18),
+        0 16px 48px rgba(0,0,0,.38),
+        0 4px 10px rgba(0,0,0,.2),
+        0 0 28px rgba(255,255,255,.05);
+    }
+
+    /* ── SHARED ── */
+    section { padding: 96px 52px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .section-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--lime); margin-bottom: 16px; }
+    .section-title { font-size: clamp(34px, 4vw, 54px); font-weight: 700; margin-bottom: 18px; }
+    .section-sub { font-size: 17px; color: var(--txt-2); max-width: 54ch; line-height: 1.75; margin-bottom: 64px; }
+
+    /* ── STAT STRIP ── */
+    .stat-strip { background: var(--ink-1); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 40px 52px; }
+    .stat-strip-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); }
+    .stat-item { text-align: center; padding: 0 24px; border-right: 1px solid var(--border); }
+    .stat-item:last-child { border-right: none; }
+    .stat-num { font-family: 'Space Grotesk', sans-serif; font-size: 52px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; margin-bottom: 8px; }
+    .stat-num.lime { color: var(--lime); }
+    .stat-num.blue { background: linear-gradient(135deg, var(--blue-lt), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .stat-num.orange { color: var(--orange); }
+    .stat-num.white { color: var(--txt-1); }
+    .stat-label { font-size: 12px; color: var(--txt-3); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+
+    /* ── SERVICES ── */
+    .services-section { background: var(--ink-1); }
+    .services-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 64px; }
+    .service-card {
+      padding: 32px 28px;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1), border-color .2s;
+    }
+    .service-card:hover { transform: translateY(-4px); }
+    .service-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-top-color: rgba(255,255,255,.45);
+      background: linear-gradient(155deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.04) 100%);
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.45), 0 4px 12px rgba(0,0,0,.25);
+      position: relative; isolation: isolate;
+    }
+    .service-icon::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      backdrop-filter: blur(12px); z-index: -1;
+    }
+    .service-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .service-card p { font-size: 14px; color: var(--txt-2); line-height: 1.6; }
+
+    /* Roles grid */
+    .roles-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .role-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--ink-2);
+      font-size: 14px; color: var(--txt-2);
+      transition: background .2s, border-color .2s;
+    }
+    .role-item:hover { background: var(--ink-3); border-color: rgba(27,111,212,.25); color: var(--txt-1); }
+    .role-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-lt); flex-shrink: 0; }
+
+    /* ── PRODUCT SECTION ── */
+    .product-section { background: var(--ink); position: relative; overflow: hidden; }
+    .product-section::before {
+      content: ''; position: absolute; top: -300px; right: -300px;
+      width: 700px; height: 700px;
+      background: radial-gradient(ellipse, rgba(27,111,212,.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .product-card {
+      background: var(--ink-2); border: 1px solid var(--border); border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,.2), 0 16px 64px rgba(0,0,0,.5);
+    }
+    .product-card-top { display: grid; grid-template-columns: 1fr 1fr; min-height: 440px; }
+    .product-card-left {
+      padding: 56px 52px; position: relative;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .product-card-left::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 80% at 0% 100%, rgba(49,87,1,.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .product-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(254,81,40,.1); border: 1px solid rgba(254,81,40,.22);
+      border-radius: 100px; padding: 5px 14px;
+      font-size: 11px; font-weight: 700; color: var(--orange);
+      letter-spacing: .06em; text-transform: uppercase;
+      margin-bottom: 24px; width: fit-content;
+    }
+    .product-logo { width: 68px; height: 68px; border-radius: 16px; margin-bottom: 24px; animation: floatY 4s ease-in-out infinite; }
+    @keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .product-title { font-size: 44px; font-weight: 700; margin-bottom: 14px; }
+    .product-desc { font-size: 15px; color: var(--txt-2); line-height: 1.65; margin-bottom: 32px; }
+    .login-box {
+      background: var(--ink-3); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px; margin-bottom: 28px;
+      font-size: 13px; color: var(--txt-2);
+    }
+    .login-box strong { color: var(--lime); }
+    .compliance-pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+    .compliance-pill {
+      background: rgba(27,111,212,.1); border: 1px solid rgba(27,111,212,.25);
+      border-radius: 8px; padding: 7px 14px;
+      font-size: 12px; font-weight: 700; color: var(--blue-lt); letter-spacing: .03em;
+    }
+    .product-card-right {
+      position: relative; overflow: hidden;
+      background: linear-gradient(135deg, var(--ink-3) 0%, rgba(27,111,212,.08) 100%);
+      border-left: 1px solid var(--border);
+    }
+    .product-card-right img { width: 100%; height: 100%; object-fit: cover; opacity: .35; mix-blend-mode: luminosity; }
+    .product-card-right::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(27,111,212,.2) 0%, rgba(49,87,1,.25) 60%, rgba(8,8,8,.5) 100%);
+    }
+    .overlay-text { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; padding: 44px; }
+    .overlay-text p { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; color: #fff; margin-bottom: 10px; }
+    .overlay-text span { font-size: 13px; color: rgba(255,255,255,.45); }
+    .partner-strip {
+      border-top: 1px solid var(--border);
+      padding: 24px 36px;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: var(--ink-3);
+    }
+    .partner-label { font-size: 12px; color: var(--txt-3); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+    .partner-badge {
+      background: var(--ink-4); border: 1px solid var(--border);
+      border-radius: 100px; padding: 4px 14px;
+      font-size: 13px; color: var(--txt-2); font-weight: 500;
+    }
+
+    /* Outcomes strip */
+    .outcomes-strip { display: grid; grid-template-columns: repeat(3,1fr); border-top: 1px solid var(--border); }
+    .outcome-item {
+      padding: 30px 36px; border-right: 1px solid var(--border);
+      position: relative; overflow: hidden; transition: background .25s;
+    }
+    .outcome-item:last-child { border-right: none; }
+    .outcome-item:hover { background: var(--ink-3); }
+    .outcome-item::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      transform: scaleX(0); transform-origin: left; transition: transform .4s cubic-bezier(.16,1,.3,1);
+    }
+    .outcome-item:hover::before { transform: scaleX(1); }
+    .outcome-item.q::before { background: var(--lime); }
+    .outcome-item.p::before { background: var(--orange); }
+    .outcome-item.perf::before { background: var(--blue-lt); }
+    .outcome-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+    .q .outcome-icon { background: rgba(220,253,57,.1); }
+    .p .outcome-icon { background: rgba(254,81,40,.1); }
+    .perf .outcome-icon { background: rgba(27,111,212,.12); }
+    .outcome-item h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .outcome-item p { font-size: 13px; color: var(--txt-2); line-height: 1.55; }
+
+    /* ── AI POLICY ── */
+    .ai-section { background: var(--lime); position: relative; overflow: hidden; padding: 96px 52px; }
+    .ai-section::before {
+      content: 'AI'; position: absolute; right: -60px; top: 50%; transform: translateY(-50%);
+      font-family: 'Space Grotesk', sans-serif; font-size: 420px; font-weight: 700;
+      color: rgba(0,0,0,.06); line-height: 1; pointer-events: none; user-select: none; white-space: nowrap;
+    }
+    .ai-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; z-index: 1; }
+    .ai-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(0,0,0,.45); margin-bottom: 16px; }
+    .ai-title { font-size: clamp(28px,4vw,48px); font-weight: 700; color: var(--ink); margin-bottom: 24px; }
+    .ai-body { font-size: 16px; color: rgba(0,0,0,.65); line-height: 1.75; }
+    .ai-points { display: flex; flex-direction: column; gap: 16px; }
+    .ai-point {
+      display: flex; gap: 16px; align-items: flex-start;
+      background: rgba(0,0,0,.06); border: 1px solid rgba(0,0,0,.1);
+      border-radius: 14px; padding: 20px 22px;
+    }
+    .ai-point-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .ai-point h4 { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .ai-point p { font-size: 13px; color: rgba(0,0,0,.6); line-height: 1.55; }
+
+    /* ── TEAM ── */
+    .team-section { background: var(--ink-1); }
+    .team-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .team-card {
+      padding: 28px 24px; border-radius: 18px;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1), border-color .2s;
+    }
+    .team-card:hover { transform: translateY(-4px); }
+    .team-avatar {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 700;
+      color: #fff; margin-bottom: 16px; letter-spacing: -.01em;
+    }
+    .team-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .team-card .role-primary { font-size: 13px; color: var(--lime); font-weight: 600; margin-bottom: 6px; }
+    .team-card .role-list { font-size: 12px; color: var(--txt-3); line-height: 1.5; }
+    /* Support staff row (2-col) */
+    .support-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 16px; }
+    .support-card {
+      padding: 20px 22px; border-radius: 14px;
+      display: flex; gap: 14px; align-items: center;
+      transition: border-color .2s;
+    }
+    .support-avatar {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; color: #fff;
+    }
+    .support-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .support-card p { font-size: 12px; color: var(--txt-3); }
+
+    /* ── OFFERS ── */
+    .offers-section { background: var(--ink); }
+    .offers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .offer-card { padding: 44px 40px; border-radius: 22px; }
+    .offer-card h3 { font-size: 28px; font-weight: 700; margin-bottom: 14px; }
+    .offer-card p { font-size: 15px; color: var(--txt-2); line-height: 1.7; margin-bottom: 32px; }
+    .offer-form { display: flex; flex-direction: column; gap: 12px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-input, .form-textarea {
+      width: 100%; padding: 12px 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      border-top-color: rgba(255,255,255,.28);
+      border-radius: 10px; color: var(--txt-1);
+      font-family: 'Inter', sans-serif; font-size: 14px;
+      transition: border-color .2s, background .2s;
+      outline: none;
+      position: relative; isolation: isolate;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--txt-3); }
+    .form-input:focus, .form-textarea:focus {
+      border-color: rgba(27,111,212,.5); background: rgba(255,255,255,.09);
+      box-shadow: 0 0 0 3px rgba(27,111,212,.12);
+    }
+    .form-textarea { min-height: 100px; resize: vertical; }
+    .phone-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .phone-link { display: inline-flex; align-items: center; gap: 8px; color: var(--lime); font-size: 16px; font-weight: 700; transition: color .2s; }
+    .phone-link:hover { color: var(--lime-dk); }
+
+    /* ── INVESTOR ── */
+    .investor-section {
+      background: var(--ink-1); position: relative; overflow: hidden; padding: 96px 52px;
+    }
+    .investor-section::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(220,253,57,.05) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 80% 100%, rgba(27,111,212,.05) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .investor-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; z-index: 1; }
+    .investor-inner h2 { font-size: clamp(28px,4vw,48px); margin-bottom: 18px; }
+    .investor-inner p { font-size: 16px; color: var(--txt-2); line-height: 1.75; margin-bottom: 24px; }
+    .contact-card { padding: 28px; border-radius: 16px; display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
+    .contact-avatar {
+      width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: #fff;
+      background: linear-gradient(135deg, var(--orange), var(--crimson));
+    }
+    .contact-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+    .contact-card a { color: var(--lime); font-size: 17px; font-weight: 700; }
+
+    /* ── QUOTE ── */
+    .quote-band {
+      position: relative; overflow: hidden;
+      background: var(--lime); padding: 72px 52px; text-align: center;
+    }
+    .quote-band::before {
+      content: '"'; position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+      font-family: 'Space Grotesk', sans-serif; font-size: 400px; font-weight: 700;
+      color: rgba(0,0,0,.06); line-height: 1; pointer-events: none; user-select: none;
+    }
+    .quote-band blockquote {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(18px,2.5vw,30px); font-weight: 700;
+      letter-spacing: -0.03em; line-height: 1.3;
+      color: var(--ink); max-width: 30ch; margin: 0 auto 16px; position: relative; z-index: 1;
+    }
+    .quote-band cite { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(8,8,8,.45); font-style: normal; }
+
+    /* ── BLUE DIVIDER ── */
+    .blue-glow-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--blue) 30%, var(--lime) 60%, transparent); opacity: .22; }
+
+    /* ── BENTO INDUSTRIES (inside product section) ── */
+    .bento-grid { display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(4,210px); gap: 12px; }
+    .bento-card { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+    .bento-card.lg { grid-column: span 2; grid-row: span 2; }
+    .bento-card.tall { grid-row: span 2; }
+    .bento-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .5; transition: transform .7s cubic-bezier(.16,1,.3,1), opacity .4s; }
+    .bento-card:hover img { transform: scale(1.06); opacity: .7; }
+    .bento-tint { position: absolute; inset: 0; background: linear-gradient(145deg, rgba(7,7,9,.55) 0%, rgba(7,7,9,.2) 100%); transition: background .4s; }
+    .bento-card:hover .bento-tint { background: linear-gradient(145deg, rgba(27,111,212,.5) 0%, rgba(49,87,1,.3) 60%, rgba(7,7,9,.2) 100%); }
+    .bento-content { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; padding: 22px; }
+    .bento-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+      position: relative; isolation: isolate;
+      border: 1px solid rgba(255,255,255,.22); border-top-color: rgba(255,255,255,.45);
+      background: linear-gradient(155deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.06) 100%);
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.5), 0 4px 12px rgba(0,0,0,.3);
+    }
+    .bento-icon::before { content: ''; position: absolute; inset: 0; border-radius: inherit; backdrop-filter: blur(10px) saturate(1.4); z-index: -1; }
+    .bento-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: #fff; margin-bottom: 4px; }
+    .bento-card.lg h3 { font-size: 26px; }
+    .bento-card p { font-size: 13px; color: rgba(255,255,255,.55); line-height: 1.5; max-width: 30ch; }
+    .bento-card.lg p { font-size: 15px; max-width: 42ch; color: rgba(255,255,255,.6); }
+    .bento-pill {
+      position: absolute; top: 16px; right: 16px; z-index: 10;
+      padding: 5px 12px; border-radius: 100px;
+      font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      color: rgba(255,255,255,.85);
+      border: 1px solid rgba(255,255,255,.22); border-top-color: rgba(255,255,255,.45);
+      background: linear-gradient(155deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.06) 100%);
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.45);
+      position: absolute; isolation: isolate;
+    }
+    .bento-pill::before { content: ''; position: absolute; inset: 0; border-radius: inherit; backdrop-filter: blur(10px); z-index: -1; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--ink); border-top: 1px solid var(--border); padding: 44px 52px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+    .footer-logo { height: 22px; width: auto; }
+    .footer-links { display: flex; gap: 28px; }
+    .footer-links a { color: var(--txt-3); font-size: 14px; transition: color .2s; }
+    .footer-links a:hover { color: var(--txt-2); }
+    .footer-copy { color: var(--txt-3); font-size: 13px; }
+
+    /* ── CARD COLOUR ACCENTS — Spotify-style: uniform glowing border ── */
+    /* uniform glowing border all the way around, dark background, subtle top accent */
+    .card-lime {
+      border: 1.5px solid rgba(220,253,57,.6) !important;
+      background: linear-gradient(to bottom, rgba(220,253,57,.06) 0%, rgba(22,22,25,.9) 36%) !important;
+      box-shadow: 0 0 0 1px rgba(220,253,57,.1), 0 0 22px rgba(220,253,57,.13), 0 0 52px rgba(220,253,57,.05), 0 8px 32px rgba(0,0,0,.4) !important;
+    }
+    .card-lime:hover { border-color: rgba(220,253,57,.85) !important; box-shadow: 0 0 0 1px rgba(220,253,57,.2), 0 0 34px rgba(220,253,57,.2), 0 0 64px rgba(220,253,57,.08), 0 16px 48px rgba(0,0,0,.45) !important; transform: translateY(-4px) !important; }
+
+    .card-blue {
+      border: 1.5px solid rgba(58,140,236,.6) !important;
+      background: linear-gradient(to bottom, rgba(27,111,212,.06) 0%, rgba(22,22,25,.9) 36%) !important;
+      box-shadow: 0 0 0 1px rgba(27,111,212,.1), 0 0 22px rgba(27,111,212,.13), 0 0 52px rgba(27,111,212,.05), 0 8px 32px rgba(0,0,0,.4) !important;
+    }
+    .card-blue:hover { border-color: rgba(58,140,236,.85) !important; box-shadow: 0 0 0 1px rgba(27,111,212,.2), 0 0 34px rgba(27,111,212,.2), 0 0 64px rgba(27,111,212,.08), 0 16px 48px rgba(0,0,0,.45) !important; transform: translateY(-4px) !important; }
+
+    .card-orange {
+      border: 1.5px solid rgba(254,81,40,.58) !important;
+      background: linear-gradient(to bottom, rgba(254,81,40,.06) 0%, rgba(22,22,25,.9) 36%) !important;
+      box-shadow: 0 0 0 1px rgba(254,81,40,.1), 0 0 22px rgba(254,81,40,.13), 0 0 52px rgba(254,81,40,.05), 0 8px 32px rgba(0,0,0,.4) !important;
+    }
+    .card-orange:hover { border-color: rgba(254,81,40,.85) !important; box-shadow: 0 0 0 1px rgba(254,81,40,.2), 0 0 34px rgba(254,81,40,.2), 0 0 64px rgba(254,81,40,.08), 0 16px 48px rgba(0,0,0,.45) !important; transform: translateY(-4px) !important; }
+
+    .card-purple {
+      border: 1.5px solid rgba(139,92,246,.58) !important;
+      background: linear-gradient(to bottom, rgba(124,58,237,.06) 0%, rgba(22,22,25,.9) 36%) !important;
+      box-shadow: 0 0 0 1px rgba(124,58,237,.1), 0 0 22px rgba(124,58,237,.12), 0 0 52px rgba(124,58,237,.05), 0 8px 32px rgba(0,0,0,.4) !important;
+    }
+    .card-purple:hover { border-color: rgba(139,92,246,.85) !important; box-shadow: 0 0 0 1px rgba(124,58,237,.2), 0 0 34px rgba(124,58,237,.18), 0 0 64px rgba(124,58,237,.07), 0 16px 48px rgba(0,0,0,.45) !important; transform: translateY(-4px) !important; }
+
+    .card-teal {
+      border: 1.5px solid rgba(6,182,212,.58) !important;
+      background: linear-gradient(to bottom, rgba(8,145,178,.06) 0%, rgba(22,22,25,.9) 36%) !important;
+      box-shadow: 0 0 0 1px rgba(8,145,178,.1), 0 0 22px rgba(8,145,178,.12), 0 0 52px rgba(8,145,178,.05), 0 8px 32px rgba(0,0,0,.4) !important;
+    }
+    .card-teal:hover { border-color: rgba(6,182,212,.85) !important; box-shadow: 0 0 0 1px rgba(8,145,178,.2), 0 0 34px rgba(8,145,178,.18), 0 0 64px rgba(8,145,178,.07), 0 16px 48px rgba(0,0,0,.45) !important; transform: translateY(-4px) !important; }
+
+    .card-amber {
+      border: 1.5px solid rgba(245,158,11,.58) !important;
+      background: linear-gradient(to bottom, rgba(217,119,6,.06) 0%, rgba(22,22,25,.9) 36%) !important;
+      box-shadow: 0 0 0 1px rgba(217,119,6,.1), 0 0 22px rgba(217,119,6,.12), 0 0 52px rgba(217,119,6,.05), 0 8px 32px rgba(0,0,0,.4) !important;
+    }
+    .card-amber:hover { border-color: rgba(245,158,11,.85) !important; box-shadow: 0 0 0 1px rgba(217,119,6,.2), 0 0 34px rgba(217,119,6,.18), 0 0 64px rgba(217,119,6,.07), 0 16px 48px rgba(0,0,0,.45) !important; transform: translateY(-4px) !important; }
+
+    /* ── RADIAL ORBITAL SECTION ── */
+    .orbital-section { background: var(--ink-1); padding: 96px 52px; overflow: hidden; position: relative; }
+    .orbital-section::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 70% at 50% 50%, rgba(27,111,212,.04) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .orbital-stage {
+      position: relative;
+      width: 560px; height: 560px;
+      margin: 0 auto;
+    }
+
+    .orbit-ring, .orbit-ring-outer {
+      position: absolute; left: 50%; top: 50%;
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none;
+    }
+    .orbit-ring { width: 420px; height: 420px; border: 1px solid rgba(255,255,255,.1); }
+    .orbit-ring-outer { width: 520px; height: 520px; border: 1px solid rgba(255,255,255,.04); }
+
+    .orbit-center {
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%,-50%);
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(49,87,1,.9), rgba(27,111,212,.7));
+      border: 1px solid rgba(255,255,255,.22);
+      box-shadow: 0 0 0 8px rgba(220,253,57,.03), 0 0 0 18px rgba(220,253,57,.015), 0 0 44px rgba(220,253,57,.12);
+      z-index: 20; cursor: pointer;
+    }
+    .orbit-logo { width: 36px; height: auto; }
+
+    .orbit-ping {
+      position: absolute; inset: -10px;
+      border-radius: 50%;
+      border: 1px solid rgba(220,253,57,.22);
+      animation: orbitPing 2.8s ease-out infinite;
+    }
+    @keyframes orbitPing {
+      0% { transform: scale(1); opacity: .75; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    #orbit-nodes { position: absolute; inset: 0; }
+
+    /* Each node is a zero-size point at the orbital position */
+    .orbit-node {
+      position: absolute; left: 50%; top: 50%;
+      width: 0; height: 0;
+      transition: opacity .4s, z-index 0s;
+      cursor: pointer;
+    }
+
+    .orbit-node-inner {
+      position: absolute;
+      left: -22px; top: -22px;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--ink-2);
+      border: 2px solid rgba(255,255,255,.28);
+      color: rgba(255,255,255,.75);
+      transition: all .3s cubic-bezier(.34,1.56,.64,1);
+      box-shadow: 0 2px 8px rgba(0,0,0,.4);
+    }
+    .orbit-node-inner.active {
+      background: #fff; color: #000;
+      border-color: #fff;
+      transform: scale(1.45);
+      box-shadow: 0 0 24px rgba(255,255,255,.45);
+    }
+
+    .orbit-node-label {
+      position: absolute;
+      left: 0; top: 28px;
+      transform: translateX(-50%);
+      font-size: 10px; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase;
+      color: rgba(255,255,255,.55);
+      white-space: nowrap; text-align: center;
+      line-height: 1.35; pointer-events: none;
+      transition: color .3s;
+    }
+    .orbit-node-label.active { color: #fff; }
+
+    /* Popup card */
+    .orbit-popup {
+      position: absolute;
+      width: 248px;
+      background: rgba(8,8,10,.94);
+      border: 1px solid rgba(255,255,255,.18);
+      border-top-color: rgba(255,255,255,.35);
+      border-radius: 14px;
+      padding: 16px 18px;
+      backdrop-filter: blur(20px) saturate(1.4);
+      box-shadow: inset 0 1.5px 0 rgba(255,255,255,.2), 0 12px 48px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+      opacity: 0; pointer-events: none;
+      transform: scale(.92);
+      transition: opacity .25s, transform .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .orbit-popup.visible { opacity: 1; pointer-events: all; transform: scale(1); }
+
+    .popup-status {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 100px; font-size: 9px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .popup-status.complete { background: rgba(220,253,57,.12); color: var(--lime); border: 1px solid rgba(220,253,57,.28); }
+    .popup-status.live { background: rgba(254,81,40,.12); color: var(--orange); border: 1px solid rgba(254,81,40,.3); animation: orbitPing 2s ease-out infinite; }
+    .popup-status.progress { background: rgba(27,111,212,.12); color: var(--blue-lt); border: 1px solid rgba(27,111,212,.28); }
+
+    .orbit-popup h4 { font-family:'Space Grotesk',sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #fff; letter-spacing: -0.02em; }
+    .orbit-popup p { font-size: 12px; color: rgba(255,255,255,.6); line-height: 1.55; margin-bottom: 0; }
+
+    .popup-energy { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.08); }
+    .popup-energy-row { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,.35); margin-bottom: 6px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    .popup-energy-bar { height: 3px; background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden; }
+    .popup-energy-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.16,1,.3,1); }
+    .popup-link { margin-top: 12px; font-size: 11px !important; padding: 7px 14px !important; border-radius: 8px !important; }
+
+    /* ── LAMP EFFECT — line at top, cone of light fans downward ── */
+    .lamp-section {
+      background: var(--ink-1);
+      position: relative; overflow: hidden;
+      min-height: 460px;
+      /* Text centred vertically in the illuminated zone */
+      display: flex; align-items: center; justify-content: center;
+      padding: 90px 24px 60px; /* top padding keeps text below the line */
+    }
+    .lamp-section::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, var(--ink-1));
+      pointer-events: none; z-index: 5;
+    }
+
+    .lamp-rig {
+      position: absolute; inset: 0;
+      pointer-events: none;
+    }
+
+    /* Wide cone of light spreading DOWNWARD from the line */
+    .lamp-cone {
+      position: absolute;
+      top: 60px; /* same y as the line */
+      left: 50%; transform: translateX(-50%);
+      width: 115%; height: 420px;
+      background: radial-gradient(ellipse 55% 100% at 50% 0%,
+        rgba(220,253,57,.52) 0%,
+        rgba(220,253,57,.26) 30%,
+        rgba(220,253,57,.07) 60%,
+        transparent 78%
+      );
+      opacity: 0;
+      animation: lampCone .9s .15s ease forwards;
+    }
+    @keyframes lampCone { to { opacity: 1; } }
+
+    /* Hot concentrated glow blob at the line (the filament) */
+    .lamp-blob {
+      position: absolute;
+      top: 20px; left: 50%; transform: translateX(-50%);
+      width: min(34rem, 92vw); height: 80px;
+      background: radial-gradient(ellipse at 50% 70%, rgba(220,253,57,.9) 0%, rgba(220,253,57,.45) 38%, transparent 68%);
+      filter: blur(22px);
+      opacity: 0;
+      animation: lampCone .8s .1s ease forwards;
+    }
+
+    /* The bright horizontal bar — solid lime, scroll-driven width */
+    .lamp-line {
+      position: absolute; top: 60px; left: 50%;
+      transform: translateX(-50%);
+      height: 3px;
+      width: 0; opacity: 0;
+      /* Fully solid lime — no gradient fade at edges */
+      background: var(--lime);
+      box-shadow:
+        0 0 8px rgba(220,253,57,1),
+        0 0 22px rgba(220,253,57,.9),
+        0 0 54px rgba(220,253,57,.65),
+        0 0 110px rgba(220,253,57,.32);
+      transition: width .6s cubic-bezier(.16,1,.3,1), box-shadow .4s ease;
+      z-index: 3;
+    }
+    /* Triggered by JS when section enters viewport */
+    .lamp-line.lamp-visible { opacity: 1; }
+
+    /* Wide secondary glow for room-fill ambience */
+    .lamp-glow {
+      position: absolute; top: 40px; left: 50%;
+      transform: translateX(-50%);
+      width: min(50rem, 100vw); height: 100px;
+      background: radial-gradient(ellipse at 50% 40%, rgba(220,253,57,.35) 0%, transparent 65%);
+      filter: blur(30px);
+      opacity: 0;
+      animation: lampCone 1s .2s ease forwards;
+    }
+
+    .lamp-text { position: relative; z-index: 6; text-align: center; padding: 0 24px; }
+    .lamp-text h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(24px,3.5vw,50px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15;
+      background: linear-gradient(135deg, var(--txt-1) 25%, var(--txt-2) 90%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+    .lamp-text p { font-size: 12px; color: var(--txt-3); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+
+    /* ── PROJECTS SECTION ── */
+    .projects-section { background: var(--ink); }
+    .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+    .project-card {
+      border-radius: 20px; padding: 36px 32px;
+      position: relative; overflow: hidden;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    .project-card:hover { transform: translateY(-4px); }
+    .project-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; backdrop-filter: blur(18px) saturate(1.4); z-index: -1; }
+
+    .proj-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+
+    .proj-badge {
+      padding: 5px 14px; border-radius: 100px;
+      font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .proj-badge.live { background: rgba(220,253,57,.12); color: var(--lime); border: 1px solid rgba(220,253,57,.3); }
+    .proj-badge.dev  { background: rgba(58,140,236,.12); color: var(--blue-lt); border: 1px solid rgba(27,111,212,.3); }
+
+    .proj-assoc { font-size: 12px; color: var(--txt-3); }
+    .proj-assoc strong { color: var(--txt-2); }
+
+    .project-card h3 { font-size: clamp(22px,3vw,32px); font-weight: 700; margin-bottom: 8px; letter-spacing: -0.03em; }
+    .project-card .proj-sub { font-size: 14px; color: var(--txt-2); margin-bottom: 20px; line-height: 1.5; }
+    .project-card .proj-body { font-size: 14px; color: var(--txt-2); line-height: 1.75; margin-bottom: 16px; }
+    .project-card .proj-body + .proj-body { margin-top: 0; }
+
+    .proj-quote {
+      background: rgba(255,255,255,.04);
+      border-left: 3px solid var(--lime);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 18px;
+      margin: 20px 0;
+      font-size: 13px; font-style: italic; color: var(--txt-2); line-height: 1.65;
+    }
+    .proj-quote::before { content: '\201C'; font-size: 24px; color: var(--lime); line-height: 0; vertical-align: -8px; margin-right: 4px; }
+    .proj-quote::after { content: '\201D'; font-size: 24px; color: var(--lime); line-height: 0; vertical-align: -8px; margin-left: 4px; }
+
+    .proj-access {
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 18px; margin: 20px 0;
+    }
+    .proj-access-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--txt-3); margin-bottom: 8px; }
+    .proj-access-creds { font-size: 13px; color: var(--txt-2); }
+    .proj-access-creds strong { color: var(--lime); }
+
+    .proj-status-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px; border-radius: 10px;
+      background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      font-size: 13px; color: var(--txt-2); margin-bottom: 16px;
+    }
+    .proj-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blue-lt); animation: pulse 2s ease-in-out infinite; flex-shrink: 0; }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .nav-links a:not(.nav-cta) { display: none; }
+      section, .ai-section, .investor-section, .quote-band, .stat-strip, footer { padding-left: 20px !important; padding-right: 20px !important; }
+      .hero-content { padding: 120px 20px 80px; }
+      .stat-strip-inner, .services-grid, .roles-grid, .team-grid, .support-grid, .offers-grid, .outcomes-strip { grid-template-columns: 1fr; }
+      .product-card-top, .ai-inner, .investor-inner { grid-template-columns: 1fr; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .lamp-section { min-height: 340px; padding-top: 70px; }
+      .lamp-cone { width: 140%; }
+      .orbital-stage { width: 320px; height: 320px; }
+      .orbit-ring { width: 260px; height: 260px; }
+      .orbit-ring-outer { width: 310px; height: 310px; }
+      .orbit-popup { width: 200px; font-size: 11px; }
+      .bento-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+      .bento-card.lg, .bento-card.tall { grid-column: span 2; grid-row: span 1; min-height: 200px; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--border); padding: 24px 0; }
+      .stat-item:last-child { border-bottom: none; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SVG GLASS FILTERS -->
+<svg style="display:none" aria-hidden="true">
+  <defs>
+    <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0008 0.004" numOctaves="1" seed="17" result="turb"/>
+      <feComponentTransfer in="turb" result="mapped">
+        <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5"/>
+        <feFuncG type="gamma" amplitude="0" exponent="1" offset="0"/>
+        <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5"/>
+      </feComponentTransfer>
+      <feGaussianBlur in="turb" stdDeviation="2.5" result="softMap"/>
+      <feSpecularLighting in="softMap" surfaceScale="6" specularConstant="1.8" specularExponent="140" lighting-color="white" result="specLight">
+        <fePointLight x="-150" y="-150" z="280"/>
+      </feSpecularLighting>
+      <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="lit"/>
+      <feDisplacementMap in="SourceGraphic" in2="softMap" scale="160" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<div id="cursor-glow"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#"><img src="Logos/logo-colour-nav.jpg" alt="Karoo Logic" class="nav-logo"></a>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#product">Our Work</a>
+    <a href="#team">Team</a>
+    <a href="#offer" class="nav-cta">Get in Touch</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-photo"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="eyebrow hero-animate"><span class="dot"></span>Software Development</div>
+    <h1 class="hero-animate">Scalable<br>systems,<br>written <span class="hl-lime">right.</span></h1>
+    <p class="hero-sub hero-animate">Six developers. One mission. We write optimal code for complex, growing systems — not average code for average problems.</p>
+    <div class="hero-ctas hero-animate">
+      <a href="#product" class="btn-orange">
+        See Our Work
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#offer" class="btn-ghost">Work With Us</a>
+    </div>
+  </div>
+  <div class="scroll-hint"><div class="scroll-line"></div><span>Scroll to explore</span></div>
+</div>
+
+<!-- LAMP TRANSITION -->
+<section class="lamp-section">
+  <div class="lamp-rig">
+    <div class="lamp-glow"></div>
+    <div class="lamp-cone"></div>
+    <div class="lamp-blob"></div>
+    <div class="lamp-line"></div>
+  </div>
+  <div class="lamp-text">
+    <h2>Software that scales.<br>Logic that lasts.</h2>
+    <p>6 Integrated Developers &nbsp;·&nbsp; Full-Stack Coverage &nbsp;·&nbsp; Scalable Architecture First</p>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stat-strip">
+  <div class="stat-strip-inner">
+    <div class="stat-item reveal">
+      <div class="stat-num lime" data-count="6">0</div>
+      <div class="stat-label">Developers</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.08s">
+      <div class="stat-num blue">6</div>
+      <div class="stat-label">Product Types</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.16s">
+      <div class="stat-num orange">6</div>
+      <div class="stat-label">Development Roles</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.24s">
+      <div class="stat-num white">1</div>
+      <div class="stat-label">Launched Product</div>
+    </div>
+  </div>
+</div>
+<div class="blue-glow-divider"></div>
+
+<!-- SERVICES -->
+<section class="services-section" id="services">
+  <div class="container">
+    <p class="section-label reveal">Development Services</p>
+    <h2 class="section-title reveal" style="transition-delay:.08s">What we build</h2>
+    <p class="section-sub reveal" style="transition-delay:.16s">From desktop apps to cloud-synchronised enterprise systems — if it runs on software, we can build it right.</p>
+
+    <div class="services-grid" style="margin-bottom:48px;">
+      <div class="service-card glass-card card-lime reveal">
+        <div class="service-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DCFD39" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h3>Management Systems</h3>
+        <p>ERP, document control, workflow automation and enterprise systems designed for scalability from day one.</p>
+      </div>
+      <div class="service-card glass-card card-blue reveal" style="transition-delay:.06s">
+        <div class="service-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3a8cec" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+        </div>
+        <h3>Cloud Synchronisation</h3>
+        <p>Real-time, conflict-free sync across devices and teams. Your data, everywhere it needs to be.</p>
+      </div>
+      <div class="service-card glass-card card-orange reveal" style="transition-delay:.12s">
+        <div class="service-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FE5128" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 8h10M7 12h6"/></svg>
+        </div>
+        <h3>Desktop Applications</h3>
+        <p>Personal computer applications with the performance and control that web apps can't deliver.</p>
+      </div>
+      <div class="service-card glass-card card-lime reveal" style="transition-delay:.06s">
+        <div class="service-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DCFD39" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3>Web Applications</h3>
+        <p>Browser-based systems built for professional use — fast, secure, and maintainable.</p>
+      </div>
+      <div class="service-card glass-card card-blue reveal" style="transition-delay:.12s">
+        <div class="service-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3a8cec" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <h3>Server Applications</h3>
+        <p>High-performance server-side systems with the reliability that production environments demand.</p>
+      </div>
+      <div class="service-card glass-card card-orange reveal" style="transition-delay:.18s">
+        <div class="service-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FE5128" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+        </div>
+        <h3>Mobile Applications</h3>
+        <p>Native and cross-platform mobile apps for field teams, clients, and operations.</p>
+      </div>
+    </div>
+
+    <p class="section-label reveal">Our Roles</p>
+    <h3 class="reveal" style="font-size:22px;font-weight:700;margin-bottom:24px;transition-delay:.06s;">Full-stack capability, in-house</h3>
+    <div class="roles-grid reveal" style="transition-delay:.12s;">
+      <div class="role-item"><span class="role-dot"></span>Business Analysis</div>
+      <div class="role-item"><span class="role-dot"></span>System &amp; Application Architecture</div>
+      <div class="role-item"><span class="role-dot"></span>Database Design &amp; Management</div>
+      <div class="role-item"><span class="role-dot"></span>Backend Development</div>
+      <div class="role-item"><span class="role-dot"></span>Frontend Development</div>
+      <div class="role-item"><span class="role-dot"></span>API &amp; Integration Development</div>
+    </div>
+  </div>
+</section>
+
+<!-- RADIAL ORBITAL -->
+<section class="orbital-section" id="capabilities">
+  <div class="container">
+    <div style="text-align:center;">
+      <h2 class="section-title reveal" style="transition-delay:.08s;">The <span class="hl-lime">full stack,</span> in orbit.</h2>
+      <p class="section-sub reveal" style="transition-delay:.16s;margin:0 auto 56px;text-align:center;">Click any node to explore. Click the centre or background to resume rotation.</p>
+    </div>
+    <div class="orbital-stage" id="orbital-stage">
+      <div class="orbit-ring-outer"></div>
+      <div class="orbit-ring"></div>
+      <div class="orbit-center" id="orbit-center">
+        <div class="orbit-ping"></div>
+        <div class="orbit-ping" style="animation-delay:.8s;"></div>
+        <img src="Logos/favicon-icon.jpg" alt="Karoo Logic" class="orbit-logo" style="width:30px;border-radius:0;">
+      </div>
+      <div id="orbit-nodes"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT: IGNITE ERP -->
+<section class="product-section" id="product">
+  <div class="container">
+    <p class="section-label reveal">Successful Projects</p>
+    <h2 class="section-title reveal" style="transition-delay:.08s">Ignite ERP</h2>
+    <p class="section-sub reveal" style="transition-delay:.16s;">An ERP system built for efficiency first — where quality and compliance follow naturally. Developed in association with The Admin People and Hugobele.</p>
+
+    <div class="product-card reveal" style="transition-delay:.24s;">
+      <div class="product-card-top">
+        <div class="product-card-left">
+          <div class="product-badge">Live &amp; In Production</div>
+          <img src="Logos/Ignite.png" alt="Ignite" class="product-logo">
+          <h3 class="product-title">Ignite ERP</h3>
+          <p class="product-desc">Where most ERP systems were designed for regulation compliance, The Admin People realised the industry needs efficiency. By improving efficiency, quality improves and regulatory compliance follows naturally.</p>
+          <div class="login-box">
+            <div style="margin-bottom:6px;font-weight:600;color:var(--txt-1);">Try it yourself — free roamer access</div>
+            <div><strong>Username:</strong> Roamer &nbsp;·&nbsp; <strong>Password:</strong> 123456</div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <a href="https://ignite.theadmin.pro/login" target="_blank" rel="noopener" class="btn-orange" style="font-size:14px;padding:12px 24px;">
+              Open Ignite Admin
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="#offer" class="btn-ghost" style="font-size:14px;padding:12px 24px;">Enquire</a>
+          </div>
+          <div class="compliance-pills" style="margin-top:20px;">
+            <div class="compliance-pill">ISO 9001:2015</div>
+            <div class="compliance-pill">Clause 7.5</div>
+          </div>
+        </div>
+        <div class="product-card-right">
+          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80" alt="Engineering office">
+          <div class="overlay-text">
+            <p>"Designed for efficiency.<br>Compliance follows."</p>
+            <span>Ignite ERP · Built for the Built Environment</span>
+          </div>
+        </div>
+      </div>
+      <div class="partner-strip">
+        <span class="partner-label">Developed in partnership with</span>
+        <span class="partner-badge">The Admin People</span>
+        <span class="partner-badge">Hugobele</span>
+        <span class="partner-badge">Karoo Logic</span>
+      </div>
+      <div class="outcomes-strip">
+        <div class="outcome-item q">
+          <div class="outcome-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4.5 4.5 7.5-7.5" stroke="#DCFD39" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Quality</h3>
+          <p>Regulated folder structures, ISO 9001:2015 compliant document control across every project.</p>
+        </div>
+        <div class="outcome-item p">
+          <div class="outcome-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 3v12M3 9h12" stroke="#FE5128" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h3>Productivity</h3>
+          <p>Familiar environment, zero retraining. Document creation, sharing, and approval with minimum friction.</p>
+        </div>
+        <div class="outcome-item perf">
+          <div class="outcome-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 14V9M9 14V4M14 14V11" stroke="#3a8cec" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h3>Performance</h3>
+          <p>Gantt deliverable scheduling, non-compliance alerts, team performance measured objectively.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Industries bento -->
+    <div style="margin-top:80px;">
+      <p class="section-label reveal">Industries Served</p>
+      <h3 class="reveal" style="font-size:clamp(28px,3.5vw,44px);font-weight:700;margin-bottom:56px;transition-delay:.08s;">Not one sector. <span class="hl-lime">All of them.</span></h3>
+      <div class="bento-grid">
+        <div class="bento-card lg reveal">
+          <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=80" alt="Infrastructure" loading="lazy">
+          <div class="bento-tint"></div>
+          <div class="bento-pill">Primary Sector</div>
+          <div class="bento-content">
+            <div class="bento-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <h3>Infrastructure &amp; Civil Engineering</h3>
+            <p>Roads, bridges, dams, water networks — Ignite was built for projects at this scale.</p>
+          </div>
+        </div>
+        <div class="bento-card reveal" style="transition-delay:.06s">
+          <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=600&q=75" alt="Architecture" loading="lazy">
+          <div class="bento-tint"></div>
+          <div class="bento-content">
+            <div class="bento-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg></div>
+            <h3>Architecture &amp; Design</h3>
+            <p>Every drawing issued correctly, every revision tracked.</p>
+          </div>
+        </div>
+        <div class="bento-card tall reveal" style="transition-delay:.08s">
+          <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=600&q=75" alt="Urban Planning" loading="lazy">
+          <div class="bento-tint"></div>
+          <div class="bento-pill">Urban</div>
+          <div class="bento-content">
+            <div class="bento-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+            <h3>Urban Planning &amp; Development</h3>
+            <p>Multi-stakeholder projects with layered document hierarchies, governed precisely.</p>
+          </div>
+        </div>
+        <div class="bento-card reveal" style="transition-delay:.1s">
+          <img src="https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=600&q=75" alt="Environmental" loading="lazy">
+          <div class="bento-tint"></div>
+          <div class="bento-content">
+            <div class="bento-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <h3>Environmental Sciences</h3>
+            <p>EIA reports and compliance records, organised.</p>
+          </div>
+        </div>
+        <div class="bento-card reveal" style="transition-delay:.06s">
+          <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=75" alt="Construction" loading="lazy">
+          <div class="bento-tint"></div>
+          <div class="bento-content">
+            <div class="bento-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M6 20V10l6-6 6 6v10M10 20v-5h4v5"/></svg></div>
+            <h3>Construction</h3>
+            <p>Site-to-boardroom document flow, without the chaos.</p>
+          </div>
+        </div>
+        <div class="bento-card reveal" style="transition-delay:.1s">
+          <img src="https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=600&q=75" alt="Hydrology" loading="lazy">
+          <div class="bento-tint"></div>
+          <div class="bento-content">
+            <div class="bento-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6 8 4 12.5 4 15a8 8 0 0 0 16 0c0-2.5-2-7-8-13z"/></svg></div>
+            <h3>Hydrology &amp; Water</h3>
+            <p>Dams, catchments, pipelines — regulated and traceable.</p>
+          </div>
+        </div>
+        <div class="bento-card reveal" style="transition-delay:.08s">
+          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=75" alt="Structural" loading="lazy">
+          <div class="bento-tint"></div>
+          <div class="bento-content">
+            <div class="bento-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M6 20V4M18 20V4M2 10h20M2 4h20"/></svg></div>
+            <h3>Structural Engineering</h3>
+            <p>Every calculation, version-controlled.</p>
+          </div>
+        </div>
+        <div class="bento-card reveal" style="transition-delay:.12s">
+          <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=600&q=75" alt="Geotechnical" loading="lazy">
+          <div class="bento-tint"></div>
+          <div class="bento-content">
+            <div class="bento-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+            <h3>Geotechnical &amp; Surveying</h3>
+            <p>Subsurface reports and GIS data, fully governed.</p>
+          </div>
+        </div>
+        <div class="bento-card reveal" style="transition-delay:.16s">
+          <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=75" alt="Compliance" loading="lazy">
+          <div class="bento-tint"></div>
+          <div class="bento-pill">ISO 9001</div>
+          <div class="bento-content">
+            <div class="bento-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <h3>Compliance &amp; Regulation</h3>
+            <p>Built-in audit trail and ISO-ready document control.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS: DETAILED STORIES -->
+<section class="projects-section" id="projects">
+  <div class="container">
+    <p class="section-label reveal">Our Projects</p>
+    <h2 class="section-title reveal" style="transition-delay:.08s;">Built with the right partners.<br><span class="hl-lime">For the right reasons.</span></h2>
+    <p class="section-sub reveal" style="transition-delay:.16s;">Behind every great product is a great reason. Here's how ours came to be — and what's coming next.</p>
+
+    <div class="projects-grid">
+
+      <!-- Ignite ERP Story Card -->
+      <div class="project-card glass-card card-lime reveal">
+        <div class="proj-header">
+          <span class="proj-badge live">Live &amp; Growing</span>
+          <span class="proj-assoc">In association with <strong>Hugobele</strong></span>
+        </div>
+        <h3>Ignite ERP</h3>
+        <p class="proj-sub">Built for <strong>The Admin People</strong> — specialists in the built environment</p>
+
+        <p class="proj-body">The Admin People, through experience in the built environment, understood the ERP needs of project owners, professional service providers, and building contractors. Where most ERP systems were designed for regulation compliance, they realised the industry needs a solution designed for <strong>efficiency</strong>. By improving efficiency, quality improves and regulatory compliance follows naturally.</p>
+
+        <p class="proj-body">The Admin People had the know-how and Hugobele had the money. With these two partners, Karoo Logic developed a unique and efficient ERP structure — with basic financial and HR functionality for individuals and organisations, and a comprehensive project document management system for infrastructure development projects.</p>
+
+        <p class="proj-body">The document management system was recently launched. Its income is expected to replace further capital investment with dividends, marking the start of a continuous self-funded project that will benefit all three partners continuously.</p>
+
+        <div class="proj-quote">
+          Without The Admin People's expertise and market infiltration, Karoo Logic's dedicated development at below-cost rates, and some cash from Hugobele, the world would have been stuck with traditional ERP systems for a long time to come.
+        </div>
+
+        <div class="proj-access">
+          <div class="proj-access-label">Try it yourself — Open Access</div>
+          <div class="proj-access-creds"><strong>Username:</strong> Roamer &nbsp;·&nbsp; <strong>Password:</strong> 123456</div>
+        </div>
+        <a href="https://ignite.theadmin.pro/login" target="_blank" rel="noopener" class="btn-orange" style="font-size:14px;padding:12px 26px;">
+          Open Ignite ERP
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <!-- Agriculture Card -->
+      <div class="project-card glass-card card-blue reveal" style="transition-delay:.1s">
+        <div class="proj-header">
+          <span class="proj-badge dev">In Development</span>
+        </div>
+        <h3>Agricultural Management System</h3>
+        <p class="proj-sub">Developed by <strong>Arie Roos</strong> — Karoo Logic</p>
+
+        <p class="proj-body">Arie Roos, our security, integrations, and cloud synchronisation specialist, is developing a dedicated agricultural management product. Designed from the ground up for the specific operational and data needs of the agricultural sector.</p>
+
+        <p class="proj-body">Where Ignite ERP was shaped by The Admin People's deep built environment expertise, this product is being shaped by domain-specific agricultural knowledge — with the same philosophy: design for efficiency, let compliance follow.</p>
+
+        <p class="proj-body">More details will be made available as the product approaches its launch phase. If you are in the agricultural sector and interested in discussing this product or a potential partnership, contact us directly.</p>
+
+        <div class="proj-status-row">
+          <div class="proj-status-dot"></div>
+          <span>Details releasing soon — contact us to learn more</span>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="#offer" class="btn-ghost" style="font-size:14px;padding:12px 26px;">Inquire About This Product</a>
+          <a href="#invest" class="btn-ghost" style="font-size:14px;padding:12px 26px;">Partnership Opportunity</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- AI POLICY -->
+<section class="ai-section">
+  <div class="ai-inner">
+    <div>
+      <p class="ai-label">Our AI Policy</p>
+      <h2 class="ai-title">AI is our best friend.<br>Not our developer.</h2>
+      <p class="ai-body">AI has proven itself as a crucial companion for software developers. On its own, it does not generate optimal code for specific objectives. Developers who allow AI to randomly generate the foundation for a scalable system will be exposed when that system responds inconsistently and becomes unstable.</p>
+      <br>
+      <p class="ai-body">Since we are in the business of scalable systems, we use <strong>humans to write optimal code</strong> according to set standards — while leaning strongly on the information, knowledge, and recommendations offered by AI. Our best friend since Google.</p>
+    </div>
+    <div class="ai-points reveal">
+      <div class="ai-point">
+        <div class="ai-point-icon">🧠</div>
+        <div>
+          <h4>AI for research &amp; knowledge</h4>
+          <p>We use AI as a research accelerator, code reviewer, and knowledge base — not as a code generator for production systems.</p>
+        </div>
+      </div>
+      <div class="ai-point">
+        <div class="ai-point-icon">⚡</div>
+        <div>
+          <h4>Humans for optimal code</h4>
+          <p>Small or simple systems tolerate average code. Scalable systems do not. Our developers write to strict specifications.</p>
+        </div>
+      </div>
+      <div class="ai-point">
+        <div class="ai-point-icon">🔒</div>
+        <div>
+          <h4>Stability &amp; reliability at scale</h4>
+          <p>When your system needs to grow, it will. Because the foundation was written right — not randomly generated.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="team-section" id="team">
+  <div class="container">
+    <p class="section-label reveal">The Team</p>
+    <h2 class="section-title reveal" style="transition-delay:.08s">Small team.<br>Full capability.</h2>
+    <p class="section-sub reveal" style="transition-delay:.16s">Six developers and support staff who integrate deeply — and can cooperate with other development teams on larger projects.</p>
+
+    <div class="team-grid">
+      <div class="team-card glass-card card-lime reveal">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#DCFD39,#315701);">IM</div>
+        <h3>Ingrid Marais</h3>
+        <div class="role-primary">Lead Developer</div>
+        <div class="role-list">Business Analyst · System Architect · Database Designer</div>
+      </div>
+      <div class="team-card glass-card card-blue reveal" style="transition-delay:.06s">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#1B6FD4,#0e3a7a);">JM</div>
+        <h3>Johannes Marais</h3>
+        <div class="role-primary">Developer</div>
+        <div class="role-list">Development Automation · Technical Application Developer · New Technology Research</div>
+      </div>
+      <div class="team-card glass-card card-orange reveal" style="transition-delay:.12s">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#FE5128,#73010C);">AR</div>
+        <h3>Arie Roos</h3>
+        <div class="role-primary">Security &amp; Integration Expert</div>
+        <div class="role-list">PC Applications · APIs &amp; Handshakes · Cloud Sync Expert</div>
+      </div>
+      <div class="team-card glass-card card-purple reveal" style="transition-delay:.06s">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#7c3aed,#4c1d95);">CS</div>
+        <h3>Carlo Schluter</h3>
+        <div class="role-primary">Principal Developer</div>
+        <div class="role-list">Backend · Frontend · Mobile Development</div>
+      </div>
+      <div class="team-card glass-card card-teal reveal" style="transition-delay:.12s">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#0891b2,#164e63);">DD</div>
+        <h3>Dumel Du Plessis</h3>
+        <div class="role-primary">Developer</div>
+        <div class="role-list">Junior Backend &amp; Frontend Developer</div>
+      </div>
+      <div class="team-card glass-card card-amber reveal" style="transition-delay:.18s">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#d97706,#78350f);">CH</div>
+        <h3>Cayden Hohls</h3>
+        <div class="role-primary">Developer</div>
+        <div class="role-list">Junior Backend &amp; Frontend Developer</div>
+      </div>
+    </div>
+
+    <div class="support-grid" style="margin-top:16px;">
+      <div class="support-card glass-card card-blue reveal" style="transition-delay:.06s">
+        <div class="support-avatar" style="background:linear-gradient(135deg,#475569,#1e293b);">PM</div>
+        <div>
+          <h4>Phillip Matsobane</h4>
+          <p>Company Administrator</p>
+        </div>
+      </div>
+      <div class="support-card glass-card card-purple reveal" style="transition-delay:.12s">
+        <div class="support-avatar" style="background:linear-gradient(135deg,#4338ca,#1e1b4b);">CM</div>
+        <div>
+          <h4>Clifford Mudzingiri</h4>
+          <p>Office Support</p>
+        </div>
+      </div>
+      <div class="support-card glass-card card-orange reveal" style="transition-delay:.18s">
+        <div class="support-avatar" style="background:linear-gradient(135deg,#FE5128,#73010C);">LH</div>
+        <div>
+          <h4>Leon Hugo</h4>
+          <p>Business Development</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-band">
+  <blockquote>"We use humans to write optimal code — while leaning strongly on AI. Our best friend since Google."</blockquote>
+  <cite>— Karoo Logic AI Policy</cite>
+</div>
+
+<!-- OUR OFFER -->
+<section class="offers-section" id="offer">
+  <div class="container">
+    <p class="section-label reveal">Our Offer</p>
+    <h2 class="section-title reveal" style="transition-delay:.08s">Two ways to work with us</h2>
+    <p class="section-sub reveal" style="transition-delay:.16s">Whether you have a project and a budget, or just the expertise and the idea — there's a path forward.</p>
+
+    <div class="offers-grid">
+      <!-- Offer 1 -->
+      <div class="offer-card glass-card reveal">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(220,253,57,.08);border:1px solid rgba(220,253,57,.2);border-radius:100px;padding:5px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--lime);margin-bottom:24px;">Development Services</div>
+        <h3>You bring the project.<br>We bring the code.</h3>
+        <p>Software development services using our own infrastructure, developed to your specifications for time-based remuneration. We work with you from analysis through to deployment.</p>
+        <div class="phone-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--lime)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.6 19.79 19.79 0 0 1 1.61 5.05 2 2 0 0 1 3.59 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17z"/></svg>
+          <a href="tel:0824114515" class="phone-link">082 411 4515</a>
+          <span style="color:var(--txt-3);font-size:13px;">Leon Hugo</span>
+        </div>
+        <div class="offer-form">
+          <div class="form-row">
+            <input type="text" class="form-input" placeholder="Your name">
+            <input type="email" class="form-input" placeholder="Email address">
+          </div>
+          <input type="text" class="form-input" placeholder="Company / Organisation">
+          <textarea class="form-textarea" placeholder="Tell us about your project…"></textarea>
+          <button type="submit" class="btn-orange" style="align-self:flex-start;font-size:14px;padding:12px 28px;">
+            Send Enquiry
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Offer 2 -->
+      <div class="offer-card glass-card reveal" style="transition-delay:.1s">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(27,111,212,.1);border:1px solid rgba(27,111,212,.25);border-radius:100px;padding:5px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:24px;">Partnership</div>
+        <h3>You bring the expertise.<br>We bring the development.</h3>
+        <p>We can partner with industry experts who understand their industry needs but do not have the financial ability to sponsor development costs. Like we did with The Admin People and Ignite.</p>
+        <div class="phone-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue-lt)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.6 19.79 19.79 0 0 1 1.61 5.05 2 2 0 0 1 3.59 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17z"/></svg>
+          <a href="tel:0824114515" class="phone-link">082 411 4515</a>
+          <span style="color:var(--txt-3);font-size:13px;">Leon Hugo</span>
+        </div>
+        <div class="offer-form">
+          <div class="form-row">
+            <input type="text" class="form-input" placeholder="Your name">
+            <input type="email" class="form-input" placeholder="Email address">
+          </div>
+          <input type="text" class="form-input" placeholder="Your industry / domain">
+          <textarea class="form-textarea" placeholder="Describe the product idea or industry need…"></textarea>
+          <button type="submit" class="btn-ghost" style="align-self:flex-start;font-size:14px;padding:12px 28px;">
+            Explore Partnership
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INVESTOR -->
+<section class="investor-section" id="invest">
+  <div class="investor-inner">
+    <div>
+      <p class="section-label reveal">Invite Investors</p>
+      <h2 class="reveal" style="transition-delay:.08s">We've identified feasible projects.<br>We're looking for the right partner.</h2>
+      <p class="reveal" style="transition-delay:.16s">We have identified projects we wish to co-fund with an investment partner or with the help of a lender. If you have capital and appetite for software investment, we'd like to talk.</p>
+      <p class="reveal" style="transition-delay:.2s;color:var(--txt-3);font-size:14px;">As with Ignite ERP — the right partnership turns an idea into a self-sustaining product that benefits all parties continuously.</p>
+    </div>
+    <div class="reveal" style="transition-delay:.2s">
+      <div class="contact-card glass-card">
+        <div class="contact-avatar">LH</div>
+        <div>
+          <h4>Leon Hugo</h4>
+          <div style="font-size:12px;color:var(--txt-3);margin-bottom:8px;">Business Development</div>
+          <a href="tel:0824114515" class="phone-link">082 411 4515</a>
+        </div>
+      </div>
+      <div class="offer-form" style="margin-top:8px;">
+        <div class="form-row">
+          <input type="text" class="form-input" placeholder="Your name">
+          <input type="email" class="form-input" placeholder="Email address">
+        </div>
+        <textarea class="form-textarea" placeholder="Tell Leon what you're interested in…" style="min-height:80px;"></textarea>
+        <button type="submit" class="btn-lime" style="align-self:flex-start;font-size:14px;padding:12px 28px;">
+          Contact Leon
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <a href="#"><img src="Logos/logo-colour-nav.jpg" alt="Karoo Logic" class="footer-logo"></a>
+    <div class="footer-links">
+      <a href="#services">Services</a>
+      <a href="#product">Our Work</a>
+      <a href="#team">Team</a>
+      <a href="#offer">Contact</a>
+      <a href="#invest">Investors</a>
+    </div>
+    <div class="footer-copy">© 2025 Karoo Logic · Pretoria, South Africa</div>
+  </div>
+</footer>
+
+<script>
+/* LAMP — scroll-driven expansion */
+(function initLamp() {
+  const line    = document.querySelector('.lamp-line');
+  const cone    = document.querySelector('.lamp-cone');
+  const glow    = document.querySelector('.lamp-glow');
+  const blob    = document.querySelector('.lamp-blob');
+  const section = document.querySelector('.lamp-section');
+  if (!line || !section) return;
+
+  let visible = false;
+
+  /* Trigger initial reveal when section enters viewport */
+  const io = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && !visible) {
+      visible = true;
+      line.classList.add('lamp-visible');
+      line.style.width = '62vw';
+      if (cone) cone.style.opacity = '1';
+      if (glow) glow.style.opacity = '1';
+      if (blob) blob.style.opacity = '1';
+    }
+  }, { threshold: 0.25 });
+  io.observe(section);
+
+  /* Expand further as user scrolls */
+  function onScroll() {
+    if (!visible) return;
+    const rect = section.getBoundingClientRect();
+    /* 0 = section just appeared, 1 = section scrolled fully past */
+    const p = Math.max(0, Math.min(1, -rect.top / (rect.height * 0.6)));
+    /* Width grows from 62vw → 100vw */
+    const w = 62 + 38 * p;
+    line.style.width = w + 'vw';
+    /* Glow intensifies with scroll */
+    const g1 = 8  + 12 * p;
+    const g2 = 22 + 22 * p;
+    const g3 = 54 + 36 * p;
+    const g4 = 110 + 80 * p;
+    line.style.boxShadow = `
+      0 0 ${g1}px rgba(220,253,57,1),
+      0 0 ${g2}px rgba(220,253,57,.9),
+      0 0 ${g3}px rgba(220,253,57,.65),
+      0 0 ${g4}px rgba(220,253,57,.32)
+    `;
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
+
+/* CURSOR GLOW — no dot, native cursor kept */
+const glow = document.getElementById('cursor-glow');
+let mx=-400,my=-400,gx=-400,gy=-400;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+document.addEventListener('mouseleave',()=>{glow.style.opacity='0';});
+document.addEventListener('mouseenter',()=>{glow.style.opacity='1';});
+(function lerpGlow(){gx+=(mx-gx)*.22;gy+=(my-gy)*.22;glow.style.left=gx+'px';glow.style.top=gy+'px';requestAnimationFrame(lerpGlow);})();
+
+/* WEBGL HERO GRADIENT */
+(function(){
+  const canvas=document.getElementById('hero-canvas');
+  const gl=canvas.getContext('webgl')||canvas.getContext('experimental-webgl');
+  if(!gl)return;
+  function resize(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;gl.viewport(0,0,canvas.width,canvas.height);}
+  resize();window.addEventListener('resize',resize);
+  const vert=`attribute vec2 a_pos;void main(){gl_Position=vec4(a_pos,0.,1.);}`;
+  const frag=`precision mediump float;
+  uniform float u_time;uniform vec2 u_res;
+  float wave(vec2 p,float fx,float fy,float sp,float ph){return sin(p.x*fx+u_time*sp+ph)*cos(p.y*fy+u_time*sp*.7+ph*1.4);}
+  void main(){
+    vec2 uv=gl_FragCoord.xy/u_res;
+    float n=wave(uv,2.8,2.2,.28,0.)*.5+wave(uv,4.5,3.8,.22,1.3)*.3+wave(uv,6.2,5.,.18,2.7)*.2;
+    float m=wave(uv,3.6,2.8,.32,4.1)*.5+wave(uv,5.1,4.2,.26,.9)*.3;
+    float k=wave(uv,2.2,3.5,.2,2.)*.5+.5;
+    vec3 ink=vec3(.027,.027,.035),blue=vec3(.106,.435,.831),dkGreen=vec3(.192,.337,.004),crimson=vec3(.451,.004,.047),lime=vec3(.863,.992,.224);
+    vec3 col=ink;
+    col=mix(col,blue,smoothstep(.52,.78,n*.5+.5)*.28);
+    col=mix(col,dkGreen,smoothstep(.50,.75,m*.5+.5)*.22);
+    col=mix(col,crimson,smoothstep(.60,.85,k)*.12);
+    col+=lime*max(0.,sin(uv.x*9.+u_time*.4)*sin(uv.y*7.+u_time*.3)*.5)*.055;
+    vec2 c=uv-.5;col*=clamp(1.-dot(c,c)*2.4,0.,1.)*.6+.4;
+    gl_FragColor=vec4(col,1.);
+  }`;
+  function sh(t,s){const x=gl.createShader(t);gl.shaderSource(x,s);gl.compileShader(x);return x;}
+  const prog=gl.createProgram();
+  gl.attachShader(prog,sh(gl.VERTEX_SHADER,vert));
+  gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,frag));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'a_pos');gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const uT=gl.getUniformLocation(prog,'u_time'),uR=gl.getUniformLocation(prog,'u_res');
+  const t0=performance.now();
+  (function tick(){const t=(performance.now()-t0)/1000;gl.uniform1f(uT,t);gl.uniform2f(uR,canvas.width,canvas.height);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);requestAnimationFrame(tick);})();
+})();
+
+/* SCROLL REVEAL */
+const io=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');io.unobserve(x.target);}});},{threshold:.07,rootMargin:'0px 0px -20px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* RADIAL ORBITAL TIMELINE */
+(function initOrbital() {
+  const stage   = document.getElementById('orbital-stage');
+  const nodesEl = document.getElementById('orbit-nodes');
+  const centerEl= document.getElementById('orbit-center');
+  if (!stage || !nodesEl) return;
+
+  const RADIUS = window.innerWidth <= 768 ? 120 : 210;
+  const ORBIT = [
+    { id:1, title:'Management\nSystems',   status:'complete', energy:95, color:'#DCFD39',
+      content:'Custom ERP, CRM, and operational platforms built for scalability. Ignite ERP — our live flagship in the built environment — is the proof.',
+      icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>' },
+    { id:2, title:'Web\nApplications',     status:'complete', energy:88, color:'#3a8cec',
+      content:'Browser-native, responsive apps for professional and enterprise use. From dashboards to complex multi-tenant platforms.',
+      icon:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>' },
+    { id:3, title:'Mobile\nApps',          status:'complete', energy:80, color:'#FE5128',
+      content:'Native and cross-platform apps for field teams, clients, and operations. Carlo Schluter leads mobile development.',
+      icon:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>' },
+    { id:4, title:'Cloud\nSync',           status:'complete', energy:92, color:'#06b6d4',
+      content:'Real-time, conflict-free synchronisation. No third-party cloud services — built directly into the system. Led by Arie Roos.',
+      icon:'<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>' },
+    { id:5, title:'APIs &\nIntegrations',  status:'complete', energy:85, color:'#8b5cf6',
+      content:'REST, GraphQL, and custom handshake development. Connecting your systems to any external platform — securely and reliably.',
+      icon:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
+    { id:6, title:'Database\nDesign',      status:'complete', energy:90, color:'#3a8cec',
+      content:'Data structured for performance, scale, and long-term maintainability. Ingrid Marais leads database architecture.',
+      icon:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>' },
+    { id:7, title:'Security &\nPC Apps',   status:'complete', energy:88, color:'#FE5128',
+      content:'Security built into every layer. Desktop PC applications with deep system integration. Led by Arie Roos — our security specialist.',
+      icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
+    { id:8, title:'Ignite\nERP',           status:'live',     energy:100, color:'#DCFD39',
+      content:'Live and growing — ERP designed for efficiency in the built environment. Built with The Admin People and Hugobele. Login free: Roamer / 123456',
+      icon:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+      link:'https://ignite.theadmin.pro/login' }
+  ];
+
+  let angle = 0, autoRotate = true, activeId = null;
+  let targetAngle = null, isAnimatingToTarget = false;
+  const posMap = {};
+
+  // Build node elements
+  ORBIT.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'orbit-node'; el.id = 'on-' + item.id;
+    const sl = item.status === 'live' ? 'live' : item.status === 'complete' ? 'complete' : 'progress';
+    const sb = item.status === 'live' ? 'LIVE' : 'COMPLETE';
+    const link = item.link ? `<a href="${item.link}" target="_blank" rel="noopener" class="btn-orange popup-link">Open Ignite <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>` : '';
+    el.innerHTML = `
+      <div class="orbit-node-inner" id="oni-${item.id}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+      </div>
+      <div class="orbit-node-label" id="onl-${item.id}">${item.title.replace('\n','<br>')}</div>
+      <div class="orbit-popup" id="pop-${item.id}">
+        <div class="popup-status ${sl}">${sb}</div>
+        <h4>${item.title.replace('\n',' ')}</h4>
+        <p>${item.content}</p>
+        ${link}
+      </div>`;
+    el.addEventListener('click', e => { e.stopPropagation(); activeId === item.id ? deactivate() : activate(item.id); });
+    nodesEl.appendChild(el);
+  });
+
+  function positionPopup(id) {
+    const pos = posMap[id] || {x:0,y:0};
+    const p = document.getElementById('pop-' + id);
+    if (!p) return;
+    // Side: node x > 0 → popup to the left; x < 0 → right; near vertical → above/below
+    const absX = Math.abs(pos.x), absY = Math.abs(pos.y);
+    p.style.top = p.style.bottom = p.style.left = p.style.right = p.style.transform = '';
+    if (absX >= absY) {
+      // Horizontal dominant
+      if (pos.x > 0) { p.style.right = '52px'; p.style.left = 'auto'; }
+      else           { p.style.left  = '52px'; p.style.right = 'auto'; }
+      p.style.top = pos.y > 60 ? 'auto' : '-30px';
+      if (pos.y > 60) p.style.bottom = '0';
+    } else {
+      // Vertical dominant
+      p.style.left = '50%'; p.style.transform = 'translateX(-50%)';
+      if (pos.y > 0) { p.style.bottom = '52px'; p.style.top = 'auto'; }
+      else           { p.style.top   = '52px'; p.style.bottom = 'auto'; }
+    }
+  }
+
+  function activate(id) {
+    deactivate();
+    activeId = id; autoRotate = false;
+    document.getElementById('oni-' + id).classList.add('active');
+    document.getElementById('onl-' + id).classList.add('active');
+
+    /* Calculate target angle to bring this node to top-centre (270° in cos/sin space) */
+    const i = ORBIT.findIndex(o => o.id === id);
+    const nodeBase = (i / ORBIT.length) * 360;
+    let raw = 270 - nodeBase;
+    /* Shortest-path normalisation */
+    let diff = ((raw - angle) % 360 + 540) % 360 - 180;
+    targetAngle = angle + diff;
+    isAnimatingToTarget = true;
+
+    /* Show popup once rotation settles (~500ms) */
+    setTimeout(() => {
+      if (activeId !== id) return; /* user may have clicked away */
+      const pop = document.getElementById('pop-' + id);
+      if (pop) { pop.classList.add('visible'); positionPopup(id); }
+    }, 480);
+  }
+
+  function deactivate() {
+    if (!activeId) return;
+    document.getElementById('oni-' + activeId)?.classList.remove('active');
+    document.getElementById('onl-' + activeId)?.classList.remove('active');
+    const pop = document.getElementById('pop-' + activeId);
+    if (pop) pop.classList.remove('visible');
+    activeId = null; autoRotate = true;
+    targetAngle = null; isAnimatingToTarget = false;
+  }
+
+  function updateNodes() {
+    ORBIT.forEach((item, i) => {
+      const el = document.getElementById('on-' + item.id);
+      if (!el) return;
+      const a = (i / ORBIT.length) * 2 * Math.PI + (angle * Math.PI / 180);
+      const x = RADIUS * Math.cos(a), y = RADIUS * Math.sin(a);
+      posMap[item.id] = {x, y};
+      const depth = (1 + Math.sin(a)) / 2;
+      el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
+      el.style.zIndex = activeId === item.id ? 100 : Math.round(5 + 15 * depth);
+      el.style.opacity = (activeId === item.id ? 1 : Math.max(.35, .3 + .7 * depth)).toFixed(2);
+    });
+  }
+
+  function tick() {
+    if (isAnimatingToTarget && targetAngle !== null) {
+      const diff = targetAngle - angle;
+      if (Math.abs(diff) < 0.25) {
+        angle = targetAngle % 360;
+        isAnimatingToTarget = false;
+      } else {
+        angle += diff * 0.09; /* ease-out lerp */
+      }
+    } else if (autoRotate) {
+      angle = (angle + 0.12) % 360;
+    }
+    updateNodes();
+    if (activeId && !isAnimatingToTarget) positionPopup(activeId);
+    requestAnimationFrame(tick);
+  }
+
+  stage.addEventListener('click', e => {
+    if (!e.target.closest('.orbit-node') && !e.target.closest('.orbit-center')) deactivate();
+  });
+  if (centerEl) centerEl.addEventListener('click', e => { e.stopPropagation(); deactivate(); });
+
+  requestAnimationFrame(tick);
+})();
+
+/* COUNT-UP */
+const co=new IntersectionObserver(e=>{e.forEach(el=>{if(!el.isIntersecting)return;const t=+el.target.dataset.count;if(isNaN(t))return;let s=null;const d=1200;(function step(ts){if(!s)s=ts;const p=Math.min((ts-s)/d,1);el.target.textContent=Math.round((1-Math.pow(1-p,3))*t);if(p<1)requestAnimationFrame(step);})(performance.now());co.unobserve(el.target);});},{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>co.observe(el));
+</script>
+</body>
+</html>

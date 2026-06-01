@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karoo Logic — Website Content Editor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f13; color: #e0e0e8; line-height: 1.6; }
+
+    header {
+      background: #1a1a22; border-bottom: 2px solid #DCFD39;
+      padding: 24px 40px; position: sticky; top: 0; z-index: 100;
+    }
+    header h1 { font-size: 20px; font-weight: 700; color: #DCFD39; }
+    header p  { font-size: 13px; color: #888; margin-top: 4px; }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 120px; }
+
+    /* Section wrapper */
+    .section {
+      margin-bottom: 52px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .section-head {
+      background: #1e1e28; padding: 14px 22px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-head .num {
+      background: #DCFD39; color: #000;
+      font-size: 11px; font-weight: 800;
+      padding: 3px 9px; border-radius: 100px;
+      letter-spacing: .06em; text-transform: uppercase; flex-shrink: 0;
+    }
+    .section-head h2 { font-size: 15px; font-weight: 700; color: #fff; }
+    .section-head .loc {
+      margin-left: auto; font-size: 11px; color: #555;
+      font-family: monospace; letter-spacing: .04em;
+    }
+
+    .section-body { padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+
+    /* Individual field */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #888;
+    }
+    .field label span { color: #3a8cec; margin-left: 6px; font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 10px; }
+    .field input, .field textarea {
+      background: #12121a; border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px; padding: 10px 14px;
+      color: #f0f0f4; font-size: 14px; font-family: inherit;
+      width: 100%; resize: vertical; outline: none;
+      transition: border-color .2s;
+    }
+    .field input:focus, .field textarea:focus {
+      border-color: #DCFD39;
+    }
+    .field textarea { min-height: 80px; }
+    .field textarea.tall { min-height: 140px; }
+
+    /* Sub-group inside a section */
+    .group {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 10px; padding: 16px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .group-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: #DCFD39; margin-bottom: 2px;
+    }
+
+    hr { border: none; border-top: 1px solid rgba(255,255,255,.06); }
+
+    .note {
+      font-size: 12px; color: #666; font-style: italic;
+      padding: 8px 12px; background: rgba(255,255,255,.03);
+      border-radius: 6px; border-left: 2px solid #DCFD39;
+    }
+
+    .save-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #1a1a22; border-top: 1px solid rgba(255,255,255,.08);
+      padding: 14px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .save-bar p { font-size: 12px; color: #666; }
+    .save-btn {
+      background: #DCFD39; color: #000;
+      padding: 10px 28px; border-radius: 8px;
+      font-weight: 700; font-size: 14px; border: none;
+      cursor: pointer;
+    }
+    .save-btn:hover { background: #c8e620; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Karoo Logic — Website Content</h1>
+  <p>Edit any field below. When done, send the file back to Claude and ask to "apply content changes" to update the website.</p>
+</header>
+
+<div class="page">
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 1. BROWSER TAB                          -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>Browser Tab</h2>
+      <span class="loc">&lt;title&gt; in &lt;head&gt;</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Page Title <span>— appears in browser tab and search results</span></label>
+        <input type="text" value="Karoo Logic — Scalable Software, Written Right">
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 2. NAVIGATION                           -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>Navigation Bar</h2>
+      <span class="loc">Fixed top bar</span>
+    </div>
+    <div class="section-body">
+      <p class="note">The logo image is Logos/logo-colour-nav.jpg — swap the file to change the logo.</p>
+      <div class="group">
+        <div class="group-title">Nav Links</div>
+        <div class="field">
+          <label>Link 1</label>
+          <input type="text" value="Services">
+        </div>
+        <div class="field">
+          <label>Link 2</label>
+          <input type="text" value="Our Work">
+        </div>
+        <div class="field">
+          <label>Link 3</label>
+          <input type="text" value="Team">
+        </div>
+        <div class="field">
+          <label>CTA Button (orange, top-right)</label>
+          <input type="text" value="Get in Touch">
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 3. HERO                                 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>Hero — First Section (Full Screen)</h2>
+      <span class="loc">First thing visitors see</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Small Badge Label <span>— animated dot + text in pill above the heading</span></label>
+        <input type="text" value="Software Development">
+      </div>
+      <div class="field">
+        <label>Main Heading <span>— very large display text, "right." is in lime yellow</span></label>
+        <textarea>Scalable
+systems,
+written right.</textarea>
+      </div>
+      <div class="field">
+        <label>Subtitle Paragraph</label>
+        <textarea>Six developers. One mission. We write optimal code for complex, growing systems — not average code for average problems.</textarea>
+      </div>
+      <div class="group">
+        <div class="group-title">Buttons</div>
+        <div class="field">
+          <label>Button 1 — Orange, links to Our Work section</label>
+          <input type="text" value="See Our Work">
+        </div>
+        <div class="field">
+          <label>Button 2 — Glass, links to Get in Touch section</label>
+          <input type="text" value="Work With Us">
+        </div>
+      </div>
+      <div class="field">
+        <label>Scroll Hint Text <span>— small text at bottom-left of hero</span></label>
+        <input type="text" value="Scroll to explore">
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 4. LAMP SECTION                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>Lamp Section — Yellow Light Effect</h2>
+      <span class="loc">Immediately after the hero</span>
+    </div>
+    <div class="section-body">
+      <p class="note">This section has an animated yellow spotlight beam from the top. The bar expands as you scroll.</p>
+      <div class="field">
+        <label>Large Heading <span>— second line is styled differently in the site</span></label>
+        <textarea>Software that scales.
+Logic that lasts.</textarea>
+      </div>
+      <div class="field">
+        <label>Small Tagline Below Heading</label>
+        <input type="text" value="6 Integrated Developers · Full-Stack Coverage · Scalable Architecture First">
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 5. STATS STRIP                          -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">05</span>
+      <h2>Stats Strip — 4 Numbers</h2>
+      <span class="loc">Dark bar below the lamp section</span>
+    </div>
+    <div class="section-body">
+      <div class="group">
+        <div class="group-title">Stat 1 — Lime colour</div>
+        <div class="field"><label>Number</label><input type="text" value="6"></div>
+        <div class="field"><label>Label</label><input type="text" value="Developers"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Stat 2 — Blue colour</div>
+        <div class="field"><label>Number</label><input type="text" value="6"></div>
+        <div class="field"><label>Label</label><input type="text" value="Product Types"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Stat 3 — Orange colour</div>
+        <div class="field"><label>Number</label><input type="text" value="6"></div>
+        <div class="field"><label>Label</label><input type="text" value="Development Roles"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Stat 4 — White colour</div>
+        <div class="field"><label>Number</label><input type="text" value="1"></div>
+        <div class="field"><label>Label</label><input type="text" value="Launched Product"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 6. SERVICES SECTION                     -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">06</span>
+      <h2>Development Services</h2>
+      <span class="loc">6 glass cards + roles list</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Section Label <span>— small uppercase lime text above the heading</span></label>
+        <input type="text" value="Development Services">
+      </div>
+      <div class="field">
+        <label>Section Heading</label>
+        <input type="text" value="What we build">
+      </div>
+      <div class="field">
+        <label>Section Subtitle</label>
+        <textarea>From desktop apps to cloud-synchronised enterprise systems — if it runs on software, we can build it right.</textarea>
+      </div>
+
+      <hr>
+      <div class="group">
+        <div class="group-title">Card 1 — Lime (Management Systems)</div>
+        <div class="field"><label>Title</label><input type="text" value="Management Systems"></div>
+        <div class="field"><label>Description</label><textarea>ERP, document control, workflow automation and enterprise systems designed for scalability from day one.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card 2 — Blue (Cloud Synchronisation)</div>
+        <div class="field"><label>Title</label><input type="text" value="Cloud Synchronisation"></div>
+        <div class="field"><label>Description</label><textarea>Real-time, conflict-free sync across devices and teams. Your data, everywhere it needs to be.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card 3 — Orange (Desktop Applications)</div>
+        <div class="field"><label>Title</label><input type="text" value="Desktop Applications"></div>
+        <div class="field"><label>Description</label><textarea>Personal computer applications with the performance and control that web apps can't deliver.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card 4 — Lime (Web Applications)</div>
+        <div class="field"><label>Title</label><input type="text" value="Web Applications"></div>
+        <div class="field"><label>Description</label><textarea>Browser-based systems built for professional use — fast, secure, and maintainable.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card 5 — Blue (Server Applications)</div>
+        <div class="field"><label>Title</label><input type="text" value="Server Applications"></div>
+        <div class="field"><label>Description</label><textarea>High-performance server-side systems with the reliability that production environments demand.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card 6 — Orange (Mobile Applications)</div>
+        <div class="field"><label>Title</label><input type="text" value="Mobile Applications"></div>
+        <div class="field"><label>Description</label><textarea>Native and cross-platform mobile apps for field teams, clients, and operations.</textarea></div>
+      </div>
+
+      <hr>
+      <div class="field">
+        <label>Roles Sub-heading</label>
+        <input type="text" value="Full-stack capability, in-house">
+      </div>
+      <p class="note">Roles are listed as individual items: Business Analysis · System &amp; Application Architecture · Database Design &amp; Management · Backend Development · Frontend Development · API &amp; Integration Development</p>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 7. ORBITAL SECTION                      -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">07</span>
+      <h2>Orbital — Rotating Capability Nodes</h2>
+      <span class="loc">After the services section — click nodes to expand</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Heading <span>— "full stack," is in lime yellow</span></label>
+        <input type="text" value="The full stack, in orbit.">
+      </div>
+      <div class="field">
+        <label>Subtitle</label>
+        <input type="text" value="Click any node to explore. Click the centre or background to resume rotation.">
+      </div>
+      <hr>
+      <div class="group">
+        <div class="group-title">Node 1 — Lime</div>
+        <div class="field"><label>Title (shown on orbit)</label><input type="text" value="Management Systems"></div>
+        <div class="field"><label>Popup Description</label><textarea>Custom ERP, CRM, and operational platforms built for scalability. Ignite ERP — our live flagship in the built environment — is the proof.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Node 2 — Blue</div>
+        <div class="field"><label>Title</label><input type="text" value="Web Applications"></div>
+        <div class="field"><label>Popup Description</label><textarea>Browser-native, responsive apps for professional and enterprise use. From dashboards to complex multi-tenant platforms.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Node 3 — Orange</div>
+        <div class="field"><label>Title</label><input type="text" value="Mobile Apps"></div>
+        <div class="field"><label>Popup Description</label><textarea>Native and cross-platform apps for field teams, clients, and operations. Carlo Schluter leads mobile development.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Node 4 — Teal</div>
+        <div class="field"><label>Title</label><input type="text" value="Cloud Sync"></div>
+        <div class="field"><label>Popup Description</label><textarea>Real-time, conflict-free synchronisation. No third-party cloud services — built directly into the system. Led by Arie Roos.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Node 5 — Purple</div>
+        <div class="field"><label>Title</label><input type="text" value="APIs & Integrations"></div>
+        <div class="field"><label>Popup Description</label><textarea>REST, GraphQL, and custom handshake development. Connecting your systems to any external platform — securely and reliably.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Node 6 — Blue</div>
+        <div class="field"><label>Title</label><input type="text" value="Database Design"></div>
+        <div class="field"><label>Popup Description</label><textarea>Data structured for performance, scale, and long-term maintainability. Ingrid Marais leads database architecture.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Node 7 — Orange</div>
+        <div class="field"><label>Title</label><input type="text" value="Security & PC Apps"></div>
+        <div class="field"><label>Popup Description</label><textarea>Security built into every layer. Desktop PC applications with deep system integration. Led by Arie Roos — our security specialist.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Node 8 — Lime (LIVE badge — links to Ignite login)</div>
+        <div class="field"><label>Title</label><input type="text" value="Ignite ERP"></div>
+        <div class="field"><label>Popup Description</label><textarea>Live and growing — ERP designed for efficiency in the built environment. Built with The Admin People and Hugobele. Login free: Roamer / 123456</textarea></div>
+        <div class="field"><label>Button Link URL</label><input type="text" value="https://ignite.theadmin.pro/login"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 8. IGNITE ERP PRODUCT CARD              -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">08</span>
+      <h2>Ignite ERP — Product Showcase Card</h2>
+      <span class="loc">Large dark card with image, outcomes, partner strip</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Section Label</label>
+        <input type="text" value="Successful Projects">
+      </div>
+      <div class="field">
+        <label>Section Heading</label>
+        <input type="text" value="Ignite ERP">
+      </div>
+      <div class="field">
+        <label>Section Subtitle</label>
+        <textarea>An ERP system built for efficiency first — where quality and compliance follow naturally. Developed in association with The Admin People and Hugobele.</textarea>
+      </div>
+      <hr>
+      <div class="field">
+        <label>Badge Text <span>— small pill on the card</span></label>
+        <input type="text" value="Live &amp; In Production">
+      </div>
+      <div class="field">
+        <label>Card Main Description</label>
+        <textarea>Where most ERP systems were designed for regulation compliance, The Admin People realised the industry needs efficiency. By improving efficiency, quality improves and regulatory compliance follows naturally.</textarea>
+      </div>
+      <div class="field">
+        <label>Login Box — Label</label>
+        <input type="text" value="Try it yourself — free roamer access">
+      </div>
+      <div class="field">
+        <label>Login Box — Credentials (Username / Password)</label>
+        <input type="text" value="Username: Roamer · Password: 123456">
+      </div>
+      <div class="field">
+        <label>Button Text</label>
+        <input type="text" value="Open Ignite Admin">
+      </div>
+      <div class="field">
+        <label>Button URL</label>
+        <input type="text" value="https://ignite.theadmin.pro/login">
+      </div>
+      <hr>
+      <div class="group">
+        <div class="group-title">Partner Strip (below the card image)</div>
+        <div class="field"><label>Label</label><input type="text" value="Developed in partnership with"></div>
+        <div class="field"><label>Partner 1</label><input type="text" value="The Admin People"></div>
+        <div class="field"><label>Partner 2</label><input type="text" value="Hugobele"></div>
+        <div class="field"><label>Partner 3</label><input type="text" value="Karoo Logic"></div>
+      </div>
+      <hr>
+      <div class="group">
+        <div class="group-title">Outcome 1 — Lime accent</div>
+        <div class="field"><label>Title</label><input type="text" value="Quality"></div>
+        <div class="field"><label>Description</label><textarea>Regulated folder structures, ISO 9001:2015 compliant document control across every project.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Outcome 2 — Orange accent</div>
+        <div class="field"><label>Title</label><input type="text" value="Productivity"></div>
+        <div class="field"><label>Description</label><textarea>Familiar environment, zero retraining. Document creation, sharing, and approval with minimum friction.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Outcome 3 — Blue accent</div>
+        <div class="field"><label>Title</label><input type="text" value="Performance"></div>
+        <div class="field"><label>Description</label><textarea>Gantt deliverable scheduling, non-compliance alerts, team performance measured objectively.</textarea></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 9. INDUSTRIES BENTO GRID                -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">09</span>
+      <h2>Industries Served — Bento Grid</h2>
+      <span class="loc">Image grid below the Ignite product card</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Section Label</label>
+        <input type="text" value="Industries Served">
+      </div>
+      <div class="field">
+        <label>Heading <span>— "All of them." is in lime yellow</span></label>
+        <input type="text" value="Not one sector. All of them.">
+      </div>
+      <p class="note">9 industry cards. Large card (top-left, spans 2×2) is Infrastructure &amp; Civil Engineering. Edit title and description for each:</p>
+      <div class="group">
+        <div class="group-title">Large Card — Infrastructure &amp; Civil Engineering</div>
+        <div class="field"><label>Title</label><input type="text" value="Infrastructure &amp; Civil Engineering"></div>
+        <div class="field"><label>Description</label><textarea>Roads, bridges, dams, water networks — Ignite was built for projects at this scale.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card — Architecture &amp; Design</div>
+        <div class="field"><label>Title</label><input type="text" value="Architecture &amp; Design"></div>
+        <div class="field"><label>Description</label><textarea>Every drawing issued correctly, every revision tracked.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Tall Card — Urban Planning &amp; Development</div>
+        <div class="field"><label>Title</label><input type="text" value="Urban Planning &amp; Development"></div>
+        <div class="field"><label>Description</label><textarea>Multi-stakeholder projects with layered document hierarchies, governed precisely.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card — Environmental Sciences</div>
+        <div class="field"><label>Title</label><input type="text" value="Environmental Sciences"></div>
+        <div class="field"><label>Description</label><textarea>EIA reports and compliance records, organised.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card — Construction</div>
+        <div class="field"><label>Title</label><input type="text" value="Construction"></div>
+        <div class="field"><label>Description</label><textarea>Site-to-boardroom document flow, without the chaos.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card — Hydrology &amp; Water</div>
+        <div class="field"><label>Title</label><input type="text" value="Hydrology &amp; Water"></div>
+        <div class="field"><label>Description</label><textarea>Dams, catchments, pipelines — regulated and traceable.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card — Structural Engineering</div>
+        <div class="field"><label>Title</label><input type="text" value="Structural Engineering"></div>
+        <div class="field"><label>Description</label><textarea>Every calculation, version-controlled.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card — Geotechnical &amp; Surveying</div>
+        <div class="field"><label>Title</label><input type="text" value="Geotechnical &amp; Surveying"></div>
+        <div class="field"><label>Description</label><textarea>Subsurface reports and GIS data, fully governed.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card — Compliance &amp; Regulation</div>
+        <div class="field"><label>Title</label><input type="text" value="Compliance &amp; Regulation"></div>
+        <div class="field"><label>Description</label><textarea>Built-in audit trail and ISO-ready document control.</textarea></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 10. PROJECTS SECTION                    -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">10</span>
+      <h2>Projects — Partnership Stories</h2>
+      <span class="loc">2 cards side by side: Ignite ERP story + Agriculture</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Section Label</label>
+        <input type="text" value="Our Projects">
+      </div>
+      <div class="field">
+        <label>Heading <span>— "For the right reasons." in lime yellow</span></label>
+        <input type="text" value="Built with the right partners. For the right reasons.">
+      </div>
+      <div class="field">
+        <label>Subtitle</label>
+        <textarea>Behind every great product is a great reason. Here's how ours came to be — and what's coming next.</textarea>
+      </div>
+      <hr>
+      <div class="group">
+        <div class="group-title">LEFT CARD — Ignite ERP (Lime border, LIVE badge)</div>
+        <div class="field"><label>Badge</label><input type="text" value="Live &amp; Growing"></div>
+        <div class="field"><label>Association Line</label><input type="text" value="In association with Hugobele"></div>
+        <div class="field"><label>Card Title</label><input type="text" value="Ignite ERP"></div>
+        <div class="field"><label>Subtitle</label><input type="text" value="Built for The Admin People — specialists in the built environment"></div>
+        <div class="field"><label>Paragraph 1</label><textarea class="tall">The Admin People, through experience in the built environment, understood the ERP needs of project owners, professional service providers, and building contractors. Where most ERP systems were designed for regulation compliance, they realised the industry needs a solution designed for efficiency. By improving efficiency, quality improves and regulatory compliance follows naturally.</textarea></div>
+        <div class="field"><label>Paragraph 2</label><textarea class="tall">The Admin People had the know-how and Hugobele had the money. With these two partners, Karoo Logic developed a unique and efficient ERP structure — with basic financial and HR functionality for individuals and organisations, and a comprehensive project document management system for infrastructure development projects.</textarea></div>
+        <div class="field"><label>Paragraph 3</label><textarea>The document management system was recently launched. Its income is expected to replace further capital investment with dividends, marking the start of a continuous self-funded project that will benefit all three partners continuously.</textarea></div>
+        <div class="field"><label>Pull Quote (left border highlight)</label><textarea>Without The Admin People's expertise and market infiltration, Karoo Logic's dedicated development at below-cost rates, and some cash from Hugobele, the world would have been stuck with traditional ERP systems for a long time to come.</textarea></div>
+        <div class="field"><label>Access Box Label</label><input type="text" value="Try it yourself — Open Access"></div>
+        <div class="field"><label>Access Credentials</label><input type="text" value="Username: Roamer · Password: 123456"></div>
+        <div class="field"><label>Button</label><input type="text" value="Open Ignite ERP"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">RIGHT CARD — Agricultural Management (Blue border, IN DEVELOPMENT badge)</div>
+        <div class="field"><label>Badge</label><input type="text" value="In Development"></div>
+        <div class="field"><label>Card Title</label><input type="text" value="Agricultural Management System"></div>
+        <div class="field"><label>Subtitle</label><input type="text" value="Developed by Arie Roos — Karoo Logic"></div>
+        <div class="field"><label>Paragraph 1</label><textarea>Arie Roos, our security, integrations, and cloud synchronisation specialist, is developing a dedicated agricultural management product. Designed from the ground up for the specific operational and data needs of the agricultural sector.</textarea></div>
+        <div class="field"><label>Paragraph 2</label><textarea>Where Ignite ERP was shaped by The Admin People's deep built environment expertise, this product is being shaped by domain-specific agricultural knowledge — with the same philosophy: design for efficiency, let compliance follow.</textarea></div>
+        <div class="field"><label>Paragraph 3</label><textarea>More details will be made available as the product approaches its launch phase. If you are in the agricultural sector and interested in discussing this product or a potential partnership, contact us directly.</textarea></div>
+        <div class="field"><label>Status Row Text</label><input type="text" value="Details releasing soon — contact us to learn more"></div>
+        <div class="field"><label>Button 1</label><input type="text" value="Inquire About This Product"></div>
+        <div class="field"><label>Button 2</label><input type="text" value="Partnership Opportunity"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 11. AI POLICY                           -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">11</span>
+      <h2>AI Policy — Lime Yellow Background Section</h2>
+      <span class="loc">Full-width lime section with dark text</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Section Label</label>
+        <input type="text" value="Our AI Policy">
+      </div>
+      <div class="field">
+        <label>Heading</label>
+        <textarea>AI is our best friend.
+Not our developer.</textarea>
+      </div>
+      <div class="field">
+        <label>Body Paragraph 1</label>
+        <textarea>AI has proven itself as a crucial companion for software developers. On its own, it does not generate optimal code for specific objectives. Developers who allow AI to randomly generate the foundation for a scalable system will be exposed when that system responds inconsistently and becomes unstable.</textarea>
+      </div>
+      <div class="field">
+        <label>Body Paragraph 2</label>
+        <textarea>Since we are in the business of scalable systems, we use humans to write optimal code according to set standards — while leaning strongly on the information, knowledge, and recommendations offered by AI. Our best friend since Google.</textarea>
+      </div>
+      <hr>
+      <div class="group">
+        <div class="group-title">Point 1 (🧠 icon)</div>
+        <div class="field"><label>Title</label><input type="text" value="AI for research &amp; knowledge"></div>
+        <div class="field"><label>Description</label><textarea>We use AI as a research accelerator, code reviewer, and knowledge base — not as a code generator for production systems.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Point 2 (⚡ icon)</div>
+        <div class="field"><label>Title</label><input type="text" value="Humans for optimal code"></div>
+        <div class="field"><label>Description</label><textarea>Small or simple systems tolerate average code. Scalable systems do not. Our developers write to strict specifications.</textarea></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Point 3 (🔒 icon)</div>
+        <div class="field"><label>Title</label><input type="text" value="Stability &amp; reliability at scale"></div>
+        <div class="field"><label>Description</label><textarea>When your system needs to grow, it will. Because the foundation was written right — not randomly generated.</textarea></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 12. TEAM                                -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">12</span>
+      <h2>Team Section — 6 Developers + 3 Support</h2>
+      <span class="loc">Glass cards with gradient avatar initials</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Section Label</label>
+        <input type="text" value="The Team">
+      </div>
+      <div class="field">
+        <label>Heading</label>
+        <textarea>Small team.
+Full capability.</textarea>
+      </div>
+      <div class="field">
+        <label>Subtitle</label>
+        <textarea>Six developers and support staff who integrate deeply — and can cooperate with other development teams on larger projects.</textarea>
+      </div>
+      <hr>
+      <div class="group">
+        <div class="group-title">Developer 1 — Lime card (IM initials)</div>
+        <div class="field"><label>Name</label><input type="text" value="Ingrid Marais"></div>
+        <div class="field"><label>Primary Role</label><input type="text" value="Lead Developer"></div>
+        <div class="field"><label>Role Details</label><input type="text" value="Business Analyst · System Architect · Database Designer"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Developer 2 — Blue card (JM initials)</div>
+        <div class="field"><label>Name</label><input type="text" value="Johannes Marais"></div>
+        <div class="field"><label>Primary Role</label><input type="text" value="Developer"></div>
+        <div class="field"><label>Role Details</label><input type="text" value="Development Automation · Technical Application Developer · New Technology Research"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Developer 3 — Orange card (AR initials)</div>
+        <div class="field"><label>Name</label><input type="text" value="Arie Roos"></div>
+        <div class="field"><label>Primary Role</label><input type="text" value="Security &amp; Integration Expert"></div>
+        <div class="field"><label>Role Details</label><input type="text" value="PC Applications · APIs &amp; Handshakes · Cloud Sync Expert"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Developer 4 — Purple card (CS initials)</div>
+        <div class="field"><label>Name</label><input type="text" value="Carlo Schluter"></div>
+        <div class="field"><label>Primary Role</label><input type="text" value="Principal Developer"></div>
+        <div class="field"><label>Role Details</label><input type="text" value="Backend · Frontend · Mobile Development"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Developer 5 — Teal card (DD initials)</div>
+        <div class="field"><label>Name</label><input type="text" value="Dumel Du Plessis"></div>
+        <div class="field"><label>Primary Role</label><input type="text" value="Developer"></div>
+        <div class="field"><label>Role Details</label><input type="text" value="Junior Backend &amp; Frontend Developer"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Developer 6 — Amber card (CH initials)</div>
+        <div class="field"><label>Name</label><input type="text" value="Cayden Hohls"></div>
+        <div class="field"><label>Primary Role</label><input type="text" value="Developer"></div>
+        <div class="field"><label>Role Details</label><input type="text" value="Junior Backend &amp; Frontend Developer"></div>
+      </div>
+      <hr>
+      <div class="group">
+        <div class="group-title">Support 1 — Blue card (PM initials)</div>
+        <div class="field"><label>Name</label><input type="text" value="Phillip Matsobane"></div>
+        <div class="field"><label>Role</label><input type="text" value="Company Administrator"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Support 2 — Purple card (CM initials)</div>
+        <div class="field"><label>Name</label><input type="text" value="Clifford Mudzingiri"></div>
+        <div class="field"><label>Role</label><input type="text" value="Office Support"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Support 3 — Orange card (LH initials)</div>
+        <div class="field"><label>Name</label><input type="text" value="Leon Hugo"></div>
+        <div class="field"><label>Role</label><input type="text" value="Business Development"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 13. QUOTE BAND                          -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">13</span>
+      <h2>Quote Band — Lime Background Strip</h2>
+      <span class="loc">Full-width lime strip between Team and Deployment</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Quote Text</label>
+        <textarea>"We use humans to write optimal code — while leaning strongly on AI. Our best friend since Google."</textarea>
+      </div>
+      <div class="field">
+        <label>Attribution</label>
+        <input type="text" value="— Karoo Logic AI Policy">
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 14. DEPLOYMENT OPTIONS                  -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">14</span>
+      <h2>Deployment Options — 3 Glass Cards</h2>
+      <span class="loc">After the team section</span>
+    </div>
+    <div class="section-body">
+      <p class="note">This section is specific to Ignite ERP deployment. If it should apply more broadly, let Claude know.</p>
+      <div class="group">
+        <div class="group-title">Card 1 — SaaS</div>
+        <div class="field"><label>Number Label</label><input type="text" value="Option 01"></div>
+        <div class="field"><label>Title</label><input type="text" value="SaaS"></div>
+        <div class="field"><label>Description</label><textarea>Get started immediately. Cloud-hosted, lower upfront cost, always kept up to date.</textarea></div>
+        <div class="field"><label>Feature 1</label><input type="text" value="Immediate implementation"></div>
+        <div class="field"><label>Feature 2</label><input type="text" value="Lower upfront cost"></div>
+        <div class="field"><label>Feature 3</label><input type="text" value="Cloud-hosted infrastructure"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card 2 — Perpetual Licence (lime border = featured)</div>
+        <div class="field"><label>Number Label</label><input type="text" value="Option 02"></div>
+        <div class="field"><label>Title</label><input type="text" value="Perpetual Licence"></div>
+        <div class="field"><label>Description</label><textarea>Full configuration freedom with no vendor lock-in. Own your system outright, forever.</textarea></div>
+        <div class="field"><label>Feature 1</label><input type="text" value="Full configuration freedom"></div>
+        <div class="field"><label>Feature 2</label><input type="text" value="No vendor lock-in"></div>
+        <div class="field"><label>Feature 3</label><input type="text" value="One-time licence fee"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Card 3 — Custom Development</div>
+        <div class="field"><label>Number Label</label><input type="text" value="Option 03"></div>
+        <div class="field"><label>Title</label><input type="text" value="Custom Development"></div>
+        <div class="field"><label>Description</label><textarea>Maximum control with a system built exactly to your specifications and workflow.</textarea></div>
+        <div class="field"><label>Feature 1</label><input type="text" value="Maximum control"></div>
+        <div class="field"><label>Feature 2</label><input type="text" value="Fully tailored to your workflow"></div>
+        <div class="field"><label>Feature 3</label><input type="text" value="Long-term partnership"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 15. OUR OFFER — CONTACT FORMS           -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">15</span>
+      <h2>Our Offer — Two Contact Forms</h2>
+      <span class="loc">Side-by-side glass cards with inquiry forms</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Section Label</label>
+        <input type="text" value="Our Offer">
+      </div>
+      <div class="field">
+        <label>Heading</label>
+        <input type="text" value="Two ways to work with us">
+      </div>
+      <div class="field">
+        <label>Subtitle</label>
+        <textarea>Whether you have a project and a budget, or just the expertise and the idea — there's a path forward.</textarea>
+      </div>
+      <hr>
+      <div class="group">
+        <div class="group-title">LEFT CARD — Development Services (Lime badge)</div>
+        <div class="field"><label>Badge</label><input type="text" value="Development Services"></div>
+        <div class="field"><label>Heading</label><textarea>You bring the project.
+We bring the code.</textarea></div>
+        <div class="field"><label>Description</label><textarea>Software development services using our own infrastructure, developed to your specifications for time-based remuneration. We work with you from analysis through to deployment.</textarea></div>
+        <div class="field"><label>Phone Number</label><input type="text" value="082 411 4515"></div>
+        <div class="field"><label>Phone Contact Name</label><input type="text" value="Leon Hugo"></div>
+        <div class="field"><label>Form: Name Placeholder</label><input type="text" value="Your name"></div>
+        <div class="field"><label>Form: Email Placeholder</label><input type="text" value="Email address"></div>
+        <div class="field"><label>Form: Company Placeholder</label><input type="text" value="Company / Organisation"></div>
+        <div class="field"><label>Form: Message Placeholder</label><input type="text" value="Tell us about your project…"></div>
+        <div class="field"><label>Submit Button</label><input type="text" value="Send Enquiry"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">RIGHT CARD — Partnership (Blue badge)</div>
+        <div class="field"><label>Badge</label><input type="text" value="Partnership"></div>
+        <div class="field"><label>Heading</label><textarea>You bring the expertise.
+We bring the development.</textarea></div>
+        <div class="field"><label>Description</label><textarea>We can partner with industry experts who understand their industry needs but do not have the financial ability to sponsor development costs. Like we did with The Admin People and Ignite.</textarea></div>
+        <div class="field"><label>Form: Name Placeholder</label><input type="text" value="Your name"></div>
+        <div class="field"><label>Form: Email Placeholder</label><input type="text" value="Email address"></div>
+        <div class="field"><label>Form: Industry Placeholder</label><input type="text" value="Your industry / domain"></div>
+        <div class="field"><label>Form: Message Placeholder</label><input type="text" value="Describe the product idea or industry need…"></div>
+        <div class="field"><label>Submit Button</label><input type="text" value="Explore Partnership"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 16. INVESTOR SECTION                    -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">16</span>
+      <h2>Investor Section</h2>
+      <span class="loc">After the offer forms</span>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>Section Label</label>
+        <input type="text" value="Invite Investors">
+      </div>
+      <div class="field">
+        <label>Heading</label>
+        <textarea>We've identified feasible projects.
+We're looking for the right partner.</textarea>
+      </div>
+      <div class="field">
+        <label>Paragraph 1</label>
+        <textarea>We have identified projects we wish to co-fund with an investment partner or with the help of a lender. If you have capital and appetite for software investment, we'd like to talk.</textarea>
+      </div>
+      <div class="field">
+        <label>Paragraph 2 (smaller, muted)</label>
+        <textarea>As with Ignite ERP — the right partnership turns an idea into a self-sustaining product that benefits all parties continuously.</textarea>
+      </div>
+      <hr>
+      <div class="group">
+        <div class="group-title">Contact Card (Leon Hugo)</div>
+        <div class="field"><label>Name</label><input type="text" value="Leon Hugo"></div>
+        <div class="field"><label>Role</label><input type="text" value="Business Development"></div>
+        <div class="field"><label>Phone</label><input type="text" value="082 411 4515"></div>
+      </div>
+      <div class="field">
+        <label>Form: Name Placeholder</label>
+        <input type="text" value="Your name">
+      </div>
+      <div class="field">
+        <label>Form: Email Placeholder</label>
+        <input type="text" value="Email address">
+      </div>
+      <div class="field">
+        <label>Form: Message Placeholder</label>
+        <input type="text" value="Tell Leon what you're interested in…">
+      </div>
+      <div class="field">
+        <label>Submit Button</label>
+        <input type="text" value="Contact Leon">
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- 17. FOOTER                              -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">17</span>
+      <h2>Footer</h2>
+      <span class="loc">Bottom of every page</span>
+    </div>
+    <div class="section-body">
+      <p class="note">The logo in the footer is Logos/logo-colour-nav.jpg — swap the file to change it.</p>
+      <div class="field">
+        <label>Footer Links <span>— comma-separated, each links to its section</span></label>
+        <input type="text" value="Ignite Admin, About, Services, Contact, Investors">
+      </div>
+      <div class="field">
+        <label>Copyright Line</label>
+        <input type="text" value="© 2025 Karoo Logic · Pretoria, South Africa">
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .page -->
+
+<div class="save-bar">
+  <p>When you've made your edits, save this file and ask Claude: <strong>"Apply my content changes from CONTENT.html"</strong></p>
+  <button class="save-btn" onclick="window.print()">Print / Save as PDF</button>
+</div>
+
+</body>
+</html>
