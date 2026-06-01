@@ -1,0 +1,28 @@
+name: Deploy to DreamHost
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Sync files to karoologic.pro
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via SFTP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASS }}
+          port: 22
+          source: "index.html,serve.mjs,CONTENT.html,Logos/,screenshot.mjs"
+          target: "/home/karoologic/karoologic.pro"
+          strip_components: 0
+          overwrite: true
+          rm: false
