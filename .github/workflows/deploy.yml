@@ -14,20 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Deploy via SCP (SSH)
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: ${{ secrets.SFTP_HOST }}
+          host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASS }}
-          protocol: ftp
-          port: 21
-          local-dir: ./
-          server-dir: /karoologic.pro/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            serve.mjs
-            serve.py
-            screenshot.mjs
+          port: 22
+          source: "index.html,CONTENT.html,Logos/"
+          target: "/home/karoologic/karoologic.pro"
+          overwrite: true
