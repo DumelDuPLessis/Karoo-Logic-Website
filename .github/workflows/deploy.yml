@@ -5,9 +5,6 @@ on:
     branches:
       - main
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,15 +14,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy via SFTP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          host: ${{ secrets.SFTP_HOST }}
+          server: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASS }}
-          port: 22
-          source: "index.html,serve.mjs,CONTENT.html,Logos/,screenshot.mjs"
-          target: "/home/karoologic/karoologic.pro"
-          strip_components: 0
-          overwrite: true
-          rm: false
+          protocol: ftp
+          port: 21
+          local-dir: ./
+          server-dir: /karoologic.pro/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            serve.mjs
+            serve.py
+            screenshot.mjs
